@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ public class PlayerController : MonoBehaviour
     private GameObject _player;
     private Rigidbody _rb;
     public Slider healthSlider;
+    public Slider jetpackFuelSlider;
 
     [Header("Player Variables")]
     public int currentHp;
@@ -26,24 +28,33 @@ public class PlayerController : MonoBehaviour
     public float runSpeed = 3f;
     public float sprintSpeed = 6f;
     public float jumpPower = 6.0f;
+    public float jetpackPower = 1.0f;
+    public int jetpackFuel;
+    public uint maxJetpackFuel = 100;
+    public int fuelRegenAmount = 2;
     public float playerHeight = 2;
     private bool jumpReady;
     private bool doubleJumpReady;
     private bool enablePlayerMovementControls, enablePlayerCameraControls; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
     public bool canRegenHp = true;
+    public bool canRegenFuel = true;
     private float defaultFov;
+    public bool canSprint = true;
+    public int stamina;
+    public int maxStamina = 100;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
+    public bool unlockJetpack;
+    public bool unlockJetpackDash;
 
     [Header("Player Inventory")]
     public List<ItemBase> playerItems = new List<ItemBase>();
     public List<Weapon> playerWeapons = new List<Weapon>();
     public Weapon currentWeapon;
 
-    //[HideInInspector]
+    [HideInInspector]
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
-    public Weapon weaponToPickup; // same as above. check the section for adding items to inventory and if this isn't used, delete this line.
 
     [Header("Misc")]
     public LayerMask groundLayer;
@@ -52,6 +63,7 @@ public class PlayerController : MonoBehaviour
     public float timeToZoom = 0.1f; // how long does it take to zoom in/out
     public float zoomedFov = 40f; // fov when zoomed all the way in
     private Coroutine zoomRoutine;
+    public bool enableJetpack = true; // the player may not want to always have the jetpack enabled
 
     private void Start()
     {
@@ -90,7 +102,8 @@ public class PlayerController : MonoBehaviour
         if (currentWeapon == null) // need to always have a weapon in the weapon list.
             currentWeapon = playerWeapons[0];
 
-        StartCoroutine(PassiveRegen());
+        StartCoroutine(HealthRegen());
+        StartCoroutine(FuelRegen());
 
         defaultFov = _mainCamera.fieldOfView;
 
@@ -117,6 +130,7 @@ public class PlayerController : MonoBehaviour
             }
             HandleCamera();
             HandleActions();
+            HandleMovement();
             firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
         if (gameLogic.timeScale == 0)
@@ -124,8 +138,27 @@ public class PlayerController : MonoBehaviour
             gameLogic.enablePlayerCameraControls = false;
         }
 
-        healthSlider.value = currentHp;
-        healthSlider.maxValue = maxHp;
+        if (jetpackFuel > (int)maxJetpackFuel)
+            jetpackFuel = (int)maxJetpackFuel;
+
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHp;
+            healthSlider.maxValue = maxHp;
+        }
+
+        if (jetpackFuelSlider != null)
+        {
+            jetpackFuelSlider.value = jetpackFuel;
+            jetpackFuelSlider.maxValue = maxJetpackFuel;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            canRegenFuel = true;
+        }
+
+        HandleInventory();
     }
 
     private void FixedUpdate()
@@ -136,7 +169,15 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            HandleMovement();
+            // jetpack
+            if (Input.GetKey(KeyCode.Space) && !isGrounded && !unlockDoubleJump)
+            {
+                StartCoroutine(HandleJetpack());
+            }
+            else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady)
+            {
+                StartCoroutine(HandleJetpack());
+            }
         }
     }
 
@@ -346,6 +387,12 @@ public class PlayerController : MonoBehaviour
                 zoomRoutine = StartCoroutine(HandleZoom(false));
             }
         }
+
+        // toggle jetpack
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            enableJetpack = !enableJetpack;
+        }
     }
 
     /* HandleInventory should control what weapons
@@ -358,10 +405,12 @@ public class PlayerController : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
             // cycle weapon up
+            Debug.Log("Scrolling!");
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             // cycle weapon down
+            Debug.LogWarning("Scrolling!");
         }
     }
 
@@ -389,7 +438,37 @@ public class PlayerController : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator PassiveRegen()
+    private IEnumerator HandleJetpack()
+    {
+        if (jetpackFuel > 0 && enableJetpack && unlockJetpack)
+        {
+            canRegenFuel = false;
+
+            _rb.velocity = (_rb.velocity * 0.965f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
+
+            _rb.AddForce(Vector2.up * 0.095f, ForceMode.Impulse); // increases takeoff speed, and allows momentum change when falling
+
+            _rb.AddForce(Vector2.up * (jetpackPower), ForceMode.Acceleration);
+
+            jetpackFuel -= 1;
+        }
+
+        yield return null;
+    }
+
+    private IEnumerator FuelRegen()
+    {
+        while (true)
+        {
+            if (jetpackFuel < maxJetpackFuel && canRegenFuel)
+            {
+                jetpackFuel += fuelRegenAmount;
+            }
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    private IEnumerator HealthRegen()
     {
         while (true)
         {
@@ -405,11 +484,8 @@ public class PlayerController : MonoBehaviour
         float startingFov = _mainCamera.fieldOfView;
         float timeElapsed = 0;
 
-        Debug.Log("Enter ToggleZoom");
-
         while (timeElapsed < timeToZoom)
         {
-            Debug.Log("Enter ToggleZoom loop");
             _mainCamera.fieldOfView = Mathf.Lerp(startingFov, desiredFov, (timeElapsed / timeToZoom));
             timeElapsed += Time.deltaTime;
             yield return null;
