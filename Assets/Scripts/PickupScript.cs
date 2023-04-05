@@ -7,6 +7,7 @@ using UnityEngine;
 public class PickupScript : MonoBehaviour
 {
     private ItemBase item;
+    bool usePickupText = true;
 
     private void Start()
     {
@@ -14,7 +15,8 @@ public class PickupScript : MonoBehaviour
 
         if (item != null && item.pickupText != null)
         {
-            item.pickupText.text = $"Press 'E' to pickup {item.name}";
+            if (usePickupText)
+                item.pickupText.text = $"Press 'E' to pickup {item.name}";
 
             item.pickupText.gameObject.SetActive(false);
         }
