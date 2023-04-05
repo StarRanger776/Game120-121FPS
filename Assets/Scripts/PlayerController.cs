@@ -158,6 +158,11 @@ public class PlayerController : MonoBehaviour
             canRegenFuel = true;
         }
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            currentWeapon.ShootRaycast();
+        }
+
         HandleInventory();
     }
 

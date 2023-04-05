@@ -16,7 +16,18 @@ public class Weapon : ItemBase
 
     public void ShootRaycast()
     {
+        if (isRaycast)
+        {
+            RaycastHit hit; //new raycast
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //direct raycast from camera to mouse position
 
+            if (Physics.Raycast(ray, out hit, 100))
+            {
+                Transform objectHit = hit.transform;
+
+                Debug.Log(objectHit.name);
+            }
+        }
     }
 
     public void ShootBullet()
