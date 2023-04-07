@@ -26,6 +26,11 @@ public class Weapon : ItemBase
                 Transform objectHit = hit.transform;
 
                 Debug.Log(objectHit.name);
+
+                if (objectHit.tag == "Enemy")
+                {
+                    objectHit.GetComponent<Enemy>().TakeDamage(damage);
+                }
             }
         }
     }
