@@ -17,7 +17,7 @@ public class AiMovement2 : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
+        //animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -34,6 +34,6 @@ public class AiMovement2 : MonoBehaviour
             timer = maxTime;
         }
         //agent.destination= playerTransform.position; //This fixes it
-        animator.SetFloat("speed", agent.velocity.magnitude);
+        //animator.SetFloat("speed", agent.velocity.magnitude);
     }
 }
