@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+using Unity.VisualScripting;
+using UnityEditor.PackageManager.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))] // using rigidbody for movement
 public class PlayerController : MonoBehaviour
@@ -13,30 +15,55 @@ public class PlayerController : MonoBehaviour
     [Header("Object References")]
     public GameLogic gameLogic;
     private Camera _mainCamera;
+    public Camera firstPersonCamera;
     private GameObject _player;
     private Rigidbody _rb;
+    public Slider healthSlider;
+    public Slider jetpackFuelSlider;
 
     [Header("Player Variables")]
     public int currentHp;
     public uint maxHp = 100; // maxHp should be a positive integer, uint
-    public float walkSpeed = 3f;
+    public float walkSpeed = 1.5f;
+    public float runSpeed = 3f;
     public float sprintSpeed = 6f;
     public float jumpPower = 6.0f;
+    public float jetpackPower = 1.0f;
+    public int jetpackFuel;
+    public uint maxJetpackFuel = 100;
+    public int fuelRegenAmount = 2;
     public float playerHeight = 2;
-    [Header("")]
-    public bool jumpReady;
-    public bool doubleJumpReady;
+    private bool jumpReady;
+    private bool doubleJumpReady;
     private bool enablePlayerMovementControls, enablePlayerCameraControls; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
+    public bool canRegenHp = true;
+    public bool canRegenFuel = true;
+    private float defaultFov;
+    public bool canSprint = true;
+    public int stamina;
+    public int maxStamina = 100;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
+    public bool unlockJetpack;
+    public bool unlockJetpackDash;
 
     [Header("Player Inventory")]
-    public List<Item> inventory = new List<Item>();
+    public List<ItemBase> playerItems = new List<ItemBase>();
+    public List<Weapon> playerWeapons = new List<Weapon>();
+    public Weapon currentWeapon;
+
+    [HideInInspector]
+    public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
 
     [Header("Misc")]
     public LayerMask groundLayer;
     private bool isGrounded;
+    private bool canZoom;
+    public float timeToZoom = 0.1f; // how long does it take to zoom in/out
+    public float zoomedFov = 40f; // fov when zoomed all the way in
+    private Coroutine zoomRoutine;
+    public bool enableJetpack = true; // the player may not want to always have the jetpack enabled
 
     private void Start()
     {
@@ -51,9 +78,9 @@ public class PlayerController : MonoBehaviour
 
         // default settings for mouse sensitivity
         if (mouseSensitivity.x == 0)
-            mouseSensitivity.x = 250;
+            mouseSensitivity.x = 100;
         if (mouseSensitivity.y == 0)
-            mouseSensitivity.y = 250;
+            mouseSensitivity.y = 100;
 
         // set gameLogic references
         enablePlayerMovementControls = gameLogic.enablePlayerMovementControls;
@@ -66,13 +93,30 @@ public class PlayerController : MonoBehaviour
             maxHp = 100;
         if (currentHp <= 0)
             currentHp = (int)maxHp;
+
+        if (playerWeapons.Count <= 0)
+        {
+            Debug.LogError("No weapons in weapon list. There should always be at least one.");
+        }
+
+        if (currentWeapon == null) // need to always have a weapon in the weapon list.
+            currentWeapon = playerWeapons[0];
+
+        StartCoroutine(HealthRegen());
+        StartCoroutine(FuelRegen());
+
+        defaultFov = _mainCamera.fieldOfView;
+
+        canZoom = true;
     }
 
     private void Update()
     {
+        Time.timeScale = gameLogic.timeScale;
         if (currentHp <= 0)
         {
             StartCoroutine(PlayerDeath());
+            canRegenHp = false;
         }
         else
         {
@@ -84,18 +128,62 @@ public class PlayerController : MonoBehaviour
             {
                 StartCoroutine(DoubleJump());
             }
+            HandleCamera();
+            HandleActions();
+            HandleMovement();
+            firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
+        if (gameLogic.timeScale == 0)
+        {
+            gameLogic.enablePlayerCameraControls = false;
+        }
+
+        if (jetpackFuel > (int)maxJetpackFuel)
+            jetpackFuel = (int)maxJetpackFuel;
+
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHp;
+            healthSlider.maxValue = maxHp;
+        }
+
+        if (jetpackFuelSlider != null)
+        {
+            jetpackFuelSlider.value = jetpackFuel;
+            jetpackFuelSlider.maxValue = maxJetpackFuel;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            canRegenFuel = true;
+        }
+
+        HandleInventory();
     }
 
     private void FixedUpdate()
     {
-        HandleCamera();
-        HandleMovement();
+        if (currentHp <= 0)
+        {
+
+        }
+        else
+        {
+            // jetpack
+            if (Input.GetKey(KeyCode.Space) && !isGrounded && !unlockDoubleJump)
+            {
+                StartCoroutine(HandleJetpack());
+            }
+            else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady)
+            {
+                StartCoroutine(HandleJetpack());
+            }
+        }
     }
 
     private void LateUpdate()
     {
-        // ensures the two variables match
+        // ensure the two booleans match
         enablePlayerMovementControls = gameLogic.enablePlayerMovementControls;
         enablePlayerCameraControls = gameLogic.enablePlayerCameraControls;
     }
@@ -106,7 +194,7 @@ public class PlayerController : MonoBehaviour
         float rotateAmount = Input.GetAxis("Horizontal");
         float moveAmount = Input.GetAxis("Vertical");
 
-        if (transform != null)
+        if (transform != null && enablePlayerMovementControls)
         {
             // forward movement
             if (Input.GetKey(KeyCode.W))
@@ -117,73 +205,94 @@ public class PlayerController : MonoBehaviour
                     // sprinting forward and left
                     if (Input.GetKey(KeyCode.A))
                     {
-                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.fixedDeltaTime;
-                        _rb.position += -transform.right * (sprintSpeed) * 0.65f * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += -transform.right * (sprintSpeed) * 0.65f * Time.deltaTime;
                     }
                     // sprinting forward and right
                     else if (Input.GetKey(KeyCode.D))
                     {
-                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.fixedDeltaTime;
-                        _rb.position += transform.right * (sprintSpeed) * 0.65f * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += transform.right * (sprintSpeed) * 0.65f * Time.deltaTime;
                     }
                     // sprinting forward
                     else
                     {
-                        _rb.position += transform.forward * (sprintSpeed) * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (sprintSpeed) * Time.deltaTime;
                     }
                 }
                 // walk handler
-                else
+                else if (Input.GetKey(KeyCode.LeftAlt))
                 {
                     // walking forward and left
                     if (Input.GetKey(KeyCode.A))
                     {
-                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
-                        _rb.position += -transform.right * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += -transform.right * (walkSpeed) * 0.65f * Time.deltaTime;
                     }
                     // walking forward and right
                     else if (Input.GetKey(KeyCode.D))
                     {
-                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
-                        _rb.position += transform.right * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += transform.right * (walkSpeed) * 0.65f * Time.deltaTime;
                     }
                     // walking forward
                     else
                     {
-                        _rb.position += transform.forward * (walkSpeed) * Time.fixedDeltaTime;
+                        _rb.position += transform.forward * (walkSpeed) * Time.deltaTime;
+                    }
+                }
+                // run handler
+                else
+                {
+                    // running forward and left
+                    if (Input.GetKey(KeyCode.A))
+                    {
+                        _rb.position += transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += -transform.right * (runSpeed) * 0.65f * Time.deltaTime;
+                    }
+                    // running forward and right
+                    else if (Input.GetKey(KeyCode.D))
+                    {
+                        _rb.position += transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
+                        _rb.position += transform.right * (runSpeed) * 0.65f * Time.deltaTime;
+                    }
+                    // running forward
+                    else
+                    {
+                        _rb.position += transform.forward * (runSpeed) * Time.deltaTime;
                     }
                 }
             }
             // backwards movement
             else if (Input.GetKey(KeyCode.S))
             {
-                // walking backwards and left
+                // running backwards and left
                 if (Input.GetKey(KeyCode.A))
                 {
-                    _rb.position += -transform.forward * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
-                    _rb.position += -transform.right * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
+                    _rb.position += -transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
+                    _rb.position += -transform.right * (runSpeed) * 0.65f * Time.deltaTime;
                 }
-                // walking backwards and right
+                // running backwards and right
                 else if (Input.GetKey(KeyCode.D))
                 {
-                    _rb.position += -transform.forward * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
-                    _rb.position += transform.right * (walkSpeed) * 0.65f * Time.fixedDeltaTime;
+                    _rb.position += -transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
+                    _rb.position += transform.right * (runSpeed) * 0.65f * Time.deltaTime;
                 }
-                // walking backwards
+                // running backwards
                 else
                 {
-                    _rb.position += -transform.forward * (walkSpeed) * Time.fixedDeltaTime;
+                    _rb.position += -transform.forward * (runSpeed) * Time.deltaTime;
                 }
             }
-            // left-only movement
+            // running left-only
             else if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S))
             {
-                _rb.position += -transform.right * (walkSpeed) * Time.fixedDeltaTime;
+                _rb.position += -transform.right * (runSpeed) * Time.deltaTime;
             }
-            // right-only movement
+            // running right-only
             else if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S))
             {
-                _rb.position += transform.right * (walkSpeed) * Time.fixedDeltaTime;
+                _rb.position += transform.right * (runSpeed) * Time.deltaTime;
             }
         }
 
@@ -203,47 +312,196 @@ public class PlayerController : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X") * Time.fixedDeltaTime * mouseSensitivity.x;
         float mouseY = Input.GetAxis("Mouse Y") * Time.fixedDeltaTime * mouseSensitivity.y;
 
-        rotation.y += mouseX;
+        if (enablePlayerCameraControls)
+        {
+            rotation.y += mouseX;
 
-        rotation.x -= mouseY;
-        rotation.x = Mathf.Clamp(rotation.x, -90f, 90f);
+            rotation.x -= mouseY;
+            rotation.x = Mathf.Clamp(rotation.x, -90f, 90f);
 
-        _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
-        transform.rotation = Quaternion.Euler(0, rotation.y, 0);
+            _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
+            transform.rotation = Quaternion.Euler(0, rotation.y, 0);
+        }
     }
 
     private void HandleActions()
     {
-        
+        // Interact
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            // pickup item
+            if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && !itemToPickup.type.ToUpper().Equals("WEAPON"))
+            {
+                playerItems.Add(itemToPickup);
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("WEAPON"))
+            {
+                playerWeapons.Add((Weapon)itemToPickup);
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+        }
+
+        // Slow down time (editor only)
+        if (UnityEditor.EditorApplication.isPlaying) // this will prevent the project from building, remove before build
+        {
+            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.Plus))
+            {
+                gameLogic.timeScale += 0.05f;
+            }
+            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.Underscore))
+            {
+                if (gameLogic.timeScale >= 0.05f)
+                    gameLogic.timeScale -= 0.05f;
+            }
+        }
+
+        // Zoom
+        if (canZoom)
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (zoomRoutine != null)
+                {
+                    StopCoroutine(zoomRoutine);
+                    zoomRoutine = null;
+                }
+
+                zoomRoutine = StartCoroutine(HandleZoom(true));
+            }
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                if (zoomRoutine != null)
+                {
+                    StopCoroutine(zoomRoutine);
+                    zoomRoutine = null;
+                }
+
+                zoomRoutine = StartCoroutine(HandleZoom(false));
+            }
+        }
+
+        // toggle jetpack
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            enableJetpack = !enableJetpack;
+        }
+    }
+
+    /* HandleInventory should control what weapons
+     * are displayed for the player.
+     * Need to cycle through the weapons list whenever the player
+     * switches weapons.
+     * HandleInventory should also control things like keys in the inventory.*/
+    private void HandleInventory()
+    {
+        if (Input.GetAxis("Mouse ScrollWheel") > 0)
+        {
+            // cycle weapon up
+            Debug.Log("Scrolling!");
+        }
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0)
+        {
+            // cycle weapon down
+            Debug.LogWarning("Scrolling!");
+        }
     }
 
     private IEnumerator Jump()
     {
-        if (jumpReady && isGrounded)
+        if (jumpReady && isGrounded && enablePlayerMovementControls)
         {
             _rb.velocity = (Vector2.down * 0);
             _rb.AddForce(Vector2.up * (jumpPower), ForceMode.Impulse);
 
             jumpReady = false;
-            yield return null;
         }
+        yield return null;
     }
 
     private IEnumerator DoubleJump()
     {
-        if (unlockDoubleJump && doubleJumpReady && !isGrounded)
+        if (unlockDoubleJump && doubleJumpReady && !isGrounded && enablePlayerMovementControls)
         {
             _rb.velocity = (Vector2.down * 0);
             _rb.AddForce(Vector2.up * (jumpPower), ForceMode.Impulse);
 
             doubleJumpReady = false;
+        }
+        yield return null;
+    }
+
+    private IEnumerator HandleJetpack()
+    {
+        if (jetpackFuel > 0 && enableJetpack && unlockJetpack)
+        {
+            canRegenFuel = false;
+
+            _rb.velocity = (_rb.velocity * 0.965f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
+
+            _rb.AddForce(Vector2.up * 0.095f, ForceMode.Impulse); // increases takeoff speed, and allows momentum change when falling
+
+            _rb.AddForce(Vector2.up * (jetpackPower), ForceMode.Acceleration);
+
+            jetpackFuel -= 1;
+        }
+
+        yield return null;
+    }
+
+    private IEnumerator FuelRegen()
+    {
+        while (true)
+        {
+            if (jetpackFuel < maxJetpackFuel && canRegenFuel)
+            {
+                jetpackFuel += fuelRegenAmount;
+            }
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    private IEnumerator HealthRegen()
+    {
+        while (true)
+        {
+            if (currentHp < (int)maxHp && canRegenHp)
+                currentHp += 1;
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    private IEnumerator HandleZoom(bool enterZoom)
+    {
+        float desiredFov = enterZoom ? zoomedFov : defaultFov; // enterZoom is checked as an if statement. if true, desiredFov = zoomedFov. if false, desiredFov = defaultFov
+        float startingFov = _mainCamera.fieldOfView;
+        float timeElapsed = 0;
+
+        while (timeElapsed < timeToZoom)
+        {
+            _mainCamera.fieldOfView = Mathf.Lerp(startingFov, desiredFov, (timeElapsed / timeToZoom));
+            timeElapsed += Time.deltaTime;
             yield return null;
         }
+
+        _mainCamera.fieldOfView = desiredFov;
+        zoomRoutine = null;
     }
 
     private IEnumerator PlayerDeath()
     {
         Time.timeScale = 0; // pauses the game, can instead pause the editor but that won't work for an actual BUILD of a unity game
+        gameLogic.enablePlayerCameraControls = false;
+        gameLogic.enablePlayerMovementControls = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         yield return null;
     }
 }
