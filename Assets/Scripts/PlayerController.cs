@@ -144,6 +144,7 @@ public class PlayerController : MonoBehaviour
 
             HandleActions();
             HandleInventory();
+            HandleCamera();
 
             firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
@@ -242,7 +243,7 @@ public class PlayerController : MonoBehaviour
         enablePlayerCameraControls = gameLogic.enablePlayerCameraControls;
 
         // need to set camera rotation in late update (prevents camera jitter)
-        HandleCamera();
+        _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
     }
 
     // movement controls
@@ -387,8 +388,6 @@ public class PlayerController : MonoBehaviour
 
             rotation.x -= mouseY;
             rotation.x = Mathf.Clamp(rotation.x, -90f, 90f);
-
-            _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
         }
     }
 

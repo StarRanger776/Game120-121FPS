@@ -13,8 +13,9 @@ public class SimpleSceneLoadScript : MonoBehaviour
 
         if (player != null && sceneToLoad != null)
         {
+            Rigidbody playerRb = other.GetComponent<Rigidbody>();
             player.transform.position = new Vector3(0, 0, 0);
-            player.gameObject.transform.rotation = new Quaternion(0, -90, 0, 0);
+            playerRb.rotation = Quaternion.Euler(0, -90, 0);
             SceneManager.LoadScene(sceneToLoad);
         }
     }

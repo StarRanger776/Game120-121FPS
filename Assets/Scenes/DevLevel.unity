@@ -14943,7 +14943,7 @@ MonoBehaviour:
   groundDrag: 5
   airDragReduction: 2.5
   unlockDoubleJump: 1
-  unlockJetpack: 0
+  unlockJetpack: 1
   unlockJetpackDash: 0
   playerItems: []
   playerWeapons:
