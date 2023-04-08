@@ -210,6 +210,11 @@ public class PlayerController : MonoBehaviour
             Vector3 limitedVel = flatVel.normalized * sprintSpeed;
             _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
         }
+
+        if (Input.GetMouseButtonDown(0) && currentWeapon != null)
+        {
+            currentWeapon.ShootRaycast();
+        }
     }
 
     private void FixedUpdate()
