@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +8,6 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Mouse Controls")]
     public Vector2 mouseSensitivity;
-    private Vector2 rotation;
 
     [Header("Object References")]
     public GameLogic gameLogic;
@@ -25,8 +22,8 @@ public class PlayerController : MonoBehaviour
     public int currentHp;
     public uint maxHp = 100; // maxHp should be a positive integer, uint
     public float walkSpeed = 1.5f;
-    public float runSpeed = 3f;
-    public float sprintSpeed = 6f;
+    public float runSpeed = 3.5f;
+    public float sprintSpeed = 5.5f;
     public float jumpPower = 6.0f;
     public float jetpackPower = 1.0f;
     public int jetpackFuel;
@@ -42,6 +39,14 @@ public class PlayerController : MonoBehaviour
     public bool canSprint = true;
     public int stamina;
     public int maxStamina = 100;
+    private Vector3 moveDirection;
+    private Transform orientation;
+    public float groundDrag = 5.0f;
+    public float airDragReduction = 2.5f;
+    private bool isSprinting = false;
+    private bool isWalking = false;
+    [HideInInspector]
+    public Vector2 rotation;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -52,6 +57,7 @@ public class PlayerController : MonoBehaviour
     public List<ItemBase> playerItems = new List<ItemBase>();
     public List<Weapon> playerWeapons = new List<Weapon>();
     public Weapon currentWeapon;
+    private int currentWeaponIndex = 0;
 
     [HideInInspector]
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
@@ -64,6 +70,7 @@ public class PlayerController : MonoBehaviour
     public float zoomedFov = 40f; // fov when zoomed all the way in
     private Coroutine zoomRoutine;
     public bool enableJetpack = true; // the player may not want to always have the jetpack enabled
+    private bool isJumping = false;
 
     private void Start()
     {
@@ -71,6 +78,7 @@ public class PlayerController : MonoBehaviour
         _mainCamera = Camera.main;
         _player = this.gameObject;
         _rb = GetComponent<Rigidbody>();
+        orientation = this.transform;
 
         // lock cursor to game window center and make it invisible
         Cursor.lockState = CursorLockMode.Locked;
@@ -108,6 +116,8 @@ public class PlayerController : MonoBehaviour
         defaultFov = _mainCamera.fieldOfView;
 
         canZoom = true;
+
+        _rb.freezeRotation = true;
     }
 
     private void Update()
@@ -120,17 +130,23 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (Input.GetKey(KeyCode.Space) && isGrounded)
+            if (Input.GetKey(KeyCode.Space) && isGrounded && jumpReady)
             {
-                StartCoroutine(Jump());
+                isJumping = true;
             }
-            if (Input.GetKeyDown(KeyCode.Space) && !isGrounded)
+            else if (Input.GetKeyDown(KeyCode.Space) && !isGrounded && doubleJumpReady && unlockDoubleJump)
             {
                 StartCoroutine(DoubleJump());
             }
-            HandleCamera();
+            else
+            {
+                isJumping = false;
+            }
+
             HandleActions();
-            HandleMovement();
+            HandleInventory();
+            HandleCamera();
+
             firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
         if (gameLogic.timeScale == 0)
@@ -158,7 +174,42 @@ public class PlayerController : MonoBehaviour
             canRegenFuel = true;
         }
 
-        HandleInventory();
+        if (isGrounded)
+        {
+            _rb.drag = groundDrag;
+        }
+        else
+        {
+            _rb.drag = 0;
+        }
+
+        // Speed limits
+        Vector3 flatVel = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+
+        if (flatVel.magnitude > runSpeed && !isSprinting)
+        {
+            Vector3 limitedVel = flatVel.normalized * runSpeed;
+            _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+        }
+
+        if (!isSprinting)
+        {
+            if (!isWalking && flatVel.magnitude > runSpeed)
+            {
+                Vector3 limitedVel = flatVel.normalized * runSpeed;
+                _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+            }
+            else if (isWalking && flatVel.magnitude > walkSpeed)
+            {
+                Vector3 limitedVel = flatVel.normalized * walkSpeed;
+                _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+            }
+        }
+        else if (isSprinting && flatVel.magnitude > sprintSpeed)
+        {
+            Vector3 limitedVel = flatVel.normalized * sprintSpeed;
+            _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
+        }
     }
 
     private void FixedUpdate()
@@ -169,6 +220,8 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            HandleMovement();
+
             // jetpack
             if (Input.GetKey(KeyCode.Space) && !isGrounded && !unlockDoubleJump)
             {
@@ -178,6 +231,9 @@ public class PlayerController : MonoBehaviour
             {
                 StartCoroutine(HandleJetpack());
             }
+
+            // need to set transform rotation BEFORE camera rotation (prevents camera jitter)
+            transform.rotation = Quaternion.Euler(0, rotation.y, 0);
         }
     }
 
@@ -186,114 +242,129 @@ public class PlayerController : MonoBehaviour
         // ensure the two booleans match
         enablePlayerMovementControls = gameLogic.enablePlayerMovementControls;
         enablePlayerCameraControls = gameLogic.enablePlayerCameraControls;
+
+        // need to set camera rotation in late update (prevents camera jitter)
+        _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
     }
 
     // movement controls
     private void HandleMovement()
     {
-        float rotateAmount = Input.GetAxis("Horizontal");
-        float moveAmount = Input.GetAxis("Vertical");
-
         if (transform != null && enablePlayerMovementControls)
         {
-            // forward movement
+            // handle sprint
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                isSprinting = true;
+            }
+            else
+            {
+                isSprinting = false;
+            }
+
+            // handle walk
+            if (Input.GetKey(KeyCode.LeftAlt))
+            {
+                isWalking = true;
+            }
+            else
+            {
+                isWalking = false;
+            }
+
+            // forward movement direction set
             if (Input.GetKey(KeyCode.W))
             {
-                // sprinting
-                if (Input.GetKey(KeyCode.LeftShift))
-                {
-                    // sprinting forward and left
-                    if (Input.GetKey(KeyCode.A))
-                    {
-                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += -transform.right * (sprintSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // sprinting forward and right
-                    else if (Input.GetKey(KeyCode.D))
-                    {
-                        _rb.position += transform.forward * (sprintSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += transform.right * (sprintSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // sprinting forward
-                    else
-                    {
-                        _rb.position += transform.forward * (sprintSpeed) * Time.deltaTime;
-                    }
-                }
-                // walk handler
-                else if (Input.GetKey(KeyCode.LeftAlt))
-                {
-                    // walking forward and left
-                    if (Input.GetKey(KeyCode.A))
-                    {
-                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += -transform.right * (walkSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // walking forward and right
-                    else if (Input.GetKey(KeyCode.D))
-                    {
-                        _rb.position += transform.forward * (walkSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += transform.right * (walkSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // walking forward
-                    else
-                    {
-                        _rb.position += transform.forward * (walkSpeed) * Time.deltaTime;
-                    }
-                }
-                // run handler
-                else
-                {
-                    // running forward and left
-                    if (Input.GetKey(KeyCode.A))
-                    {
-                        _rb.position += transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += -transform.right * (runSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // running forward and right
-                    else if (Input.GetKey(KeyCode.D))
-                    {
-                        _rb.position += transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
-                        _rb.position += transform.right * (runSpeed) * 0.65f * Time.deltaTime;
-                    }
-                    // running forward
-                    else
-                    {
-                        _rb.position += transform.forward * (runSpeed) * Time.deltaTime;
-                    }
-                }
-            }
-            // backwards movement
-            else if (Input.GetKey(KeyCode.S))
-            {
-                // running backwards and left
+                // forward and left
                 if (Input.GetKey(KeyCode.A))
                 {
-                    _rb.position += -transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
-                    _rb.position += -transform.right * (runSpeed) * 0.65f * Time.deltaTime;
+                    moveDirection = orientation.forward + -orientation.right;
                 }
-                // running backwards and right
+                // forward and right
                 else if (Input.GetKey(KeyCode.D))
                 {
-                    _rb.position += -transform.forward * (runSpeed) * 0.65f * Time.deltaTime;
-                    _rb.position += transform.right * (runSpeed) * 0.65f * Time.deltaTime;
+                    moveDirection = orientation.forward + orientation.right;
                 }
-                // running backwards
+                // forward only
                 else
                 {
-                    _rb.position += -transform.forward * (runSpeed) * Time.deltaTime;
+                    moveDirection = orientation.forward;
                 }
             }
-            // running left-only
-            else if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S))
+            // backwards movement direction set
+            else if (Input.GetKey(KeyCode.S))
             {
-                _rb.position += -transform.right * (runSpeed) * Time.deltaTime;
+                // backwards and left
+                if (Input.GetKey(KeyCode.A))
+                {
+                    moveDirection = -orientation.forward + -orientation.right;
+                }
+                // backwards and right
+                else if (Input.GetKey(KeyCode.D))
+                {
+                    moveDirection = -orientation.forward + orientation.right;
+                }
+                // backwards only
+                else
+                {
+                    moveDirection = -orientation.forward;
+                }
             }
-            // running right-only
-            else if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S))
+            // left only
+            else if (Input.GetKey(KeyCode.A))
             {
-                _rb.position += transform.right * (runSpeed) * Time.deltaTime;
+                moveDirection = -orientation.right;
             }
+            // right only
+            else if (Input.GetKey(KeyCode.D))
+            {
+                moveDirection = orientation.right;
+            }
+            // stop movement
+            else
+            {
+                moveDirection = orientation.forward * 0 + orientation.right * 0;
+            }
+
+            // take our moveDirection and apply it to our current speed (multiplied by 10 so we actually get decent movement (you don't need to multiply by 10, you will just need to set the speeds way higher in the inspector))
+            if (isGrounded)
+            {
+                if (!isSprinting)
+                {
+                    if (!isWalking)
+                        _rb.AddForce(moveDirection.normalized * runSpeed * 10, ForceMode.Force);
+                    else
+                        _rb.AddForce(moveDirection.normalized * walkSpeed * 10, ForceMode.Force);
+                }
+                else if (isSprinting)
+                {
+                    _rb.AddForce(moveDirection.normalized * sprintSpeed * 10, ForceMode.Force);
+                }
+            }
+            else if (!isGrounded)
+            {
+                if (!isSprinting)
+                {
+                    if (!isWalking)
+                        _rb.AddForce(moveDirection.normalized * runSpeed * 10 * airDragReduction, ForceMode.Force);
+                    else
+                        _rb.AddForce(moveDirection.normalized * walkSpeed * 10 * airDragReduction, ForceMode.Force);
+                }
+                else if (isSprinting)
+                {
+                    _rb.AddForce(moveDirection.normalized * sprintSpeed * 10 * airDragReduction, ForceMode.Force);
+                }
+            }
+        }
+
+        // jump
+        if (jumpReady && isGrounded && enablePlayerMovementControls && isJumping)
+        {
+            _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+            _rb.AddForce(Vector2.up * jumpPower, ForceMode.Impulse);
+
+            jumpReady = false;
+            isJumping = false;
         }
 
         // reset jump checks, can add layers to check if needed
@@ -318,9 +389,6 @@ public class PlayerController : MonoBehaviour
 
             rotation.x -= mouseY;
             rotation.x = Mathf.Clamp(rotation.x, -90f, 90f);
-
-            _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
-            transform.rotation = Quaternion.Euler(0, rotation.y, 0);
         }
     }
 
@@ -349,7 +417,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Slow down time (editor only)
-        if (UnityEditor.EditorApplication.isPlaying) // this will prevent the project from building, remove before build
+        if (UnityEditor.EditorApplication.isPlaying) // this will prevent the project from building, remove the slow-time code before building. this feature should not be in a build
         {
             if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.Plus))
             {
@@ -405,33 +473,60 @@ public class PlayerController : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
             // cycle weapon up
-            Debug.Log("Scrolling!");
+            if (currentWeaponIndex < playerWeapons.Count - 1) // only executes if we are not at the last index
+            {
+                // play unequip animation
+                // disable currentWeapon gameObject
+                currentWeaponIndex += 1;
+                currentWeapon = playerWeapons[currentWeaponIndex];
+                // enable currentWeapon gameObject
+                // play equip animation
+                Debug.Log($"Equipped {currentWeapon.name}!");
+            }
+            else // otherwise we set the currentWeapon to our first weapon (we don't need this if we don't want to let the player scroll all the way through the list endlessly)
+            {
+                // play unequip animation
+                // disable currentWeapon gameObject
+                currentWeaponIndex = 0;
+                currentWeapon = playerWeapons[currentWeaponIndex];
+                // enable currentWeapon gameObject
+                // play equip animation
+                Debug.Log($"Equipped {currentWeapon.name}!");
+            }
+
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             // cycle weapon down
-            Debug.LogWarning("Scrolling!");
+            if (currentWeaponIndex > 0) // only executes if we are not at the first index
+            {
+                // play unequip animation
+                // disable currentWeapon gameObject
+                currentWeapon = playerWeapons[currentWeaponIndex - 1];
+                currentWeaponIndex -= 1;
+                // enable currentWeapon gameObject
+                // play equip animation
+                Debug.Log($"Equipped {currentWeapon.name}!");
+            }
+            else // otherwise we set the currentWeapon to our last weapon (same as above)
+            {
+                // play unequip animation
+                // disable currentWeapon gameObject
+                currentWeaponIndex = playerWeapons.Count - 1;
+                currentWeapon = playerWeapons[currentWeaponIndex];
+                // enable currentWeapon gameObject
+                // play equip animation
+                Debug.Log($"Equipped {currentWeapon.name}!");
+            }
         }
-    }
-
-    private IEnumerator Jump()
-    {
-        if (jumpReady && isGrounded && enablePlayerMovementControls)
-        {
-            _rb.velocity = (Vector2.down * 0);
-            _rb.AddForce(Vector2.up * (jumpPower), ForceMode.Impulse);
-
-            jumpReady = false;
-        }
-        yield return null;
     }
 
     private IEnumerator DoubleJump()
     {
         if (unlockDoubleJump && doubleJumpReady && !isGrounded && enablePlayerMovementControls)
         {
-            _rb.velocity = (Vector2.down * 0);
-            _rb.AddForce(Vector2.up * (jumpPower), ForceMode.Impulse);
+            _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
+            _rb.AddForce(Vector2.up * jumpPower, ForceMode.Impulse);
 
             doubleJumpReady = false;
         }
