@@ -27,7 +27,7 @@ public class Weapon : ItemBase
 
                 Debug.Log(objectHit.name);
 
-                if (objectHit.tag == "Enemy")
+                if (objectHit.GetComponent<Enemy>())
                 {
                     objectHit.GetComponent<Enemy>().TakeDamage(damage);
                 }
