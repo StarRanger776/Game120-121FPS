@@ -12,11 +12,11 @@ public class Lava : MonoBehaviour
     {
         if (isInLava && player != null)
         {
-            player.canRegenHp = false;
+            //player.canRegenHp = false;
         }
         else if (!isInLava && player != null)
         {
-            player.canRegenHp = true;
+            //player.canRegenHp = true;
         }
     }
 
