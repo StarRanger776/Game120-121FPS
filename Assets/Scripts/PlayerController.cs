@@ -8,7 +8,6 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Mouse Controls")]
     public Vector2 mouseSensitivity;
-    private Vector2 rotation;
 
     [Header("Object References")]
     public GameLogic gameLogic;
@@ -46,6 +45,8 @@ public class PlayerController : MonoBehaviour
     public float airDragReduction = 2.5f;
     private bool isSprinting = false;
     private bool isWalking = false;
+    [HideInInspector]
+    public Vector2 rotation;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
