@@ -14,6 +14,9 @@ public class Weapon : ItemBase
     public bool isTwoHanded;
     public bool isRaycast;
 
+    [Header("Misc")]
+    public LayerMask ShootRaycastIgnore;
+
     public void ShootRaycast()
     {
         if (isRaycast)
@@ -21,7 +24,7 @@ public class Weapon : ItemBase
             RaycastHit hit; //new raycast
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //direct raycast from camera to mouse position
 
-            if (Physics.Raycast(ray, out hit, 100))
+            if (Physics.Raycast(ray, out hit, 100, ~ShootRaycastIgnore))
             {
                 Transform objectHit = hit.transform;
 

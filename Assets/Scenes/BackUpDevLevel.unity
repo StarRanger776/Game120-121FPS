@@ -518,9 +518,11 @@ MonoBehaviour:
   rotX: 1
   rotY: 1
   rotZ: 1
+  rotOffset: {x: 0, y: 0, z: 0, w: 0}
   posX: 0
   posY: 0
   posZ: 0
+  posOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &76434821
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,9 +625,11 @@ MonoBehaviour:
   rotX: 0
   rotY: 0
   rotZ: 0
+  rotOffset: {x: 0, y: 0, z: 0, w: 0}
   posX: 1
   posY: 1
   posZ: 1
+  posOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &181597022
 GameObject:
   m_ObjectHideFlags: 0
@@ -1257,7 +1261,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh23942
+  m_Name: pb_Mesh143436
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1421,7 +1425,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh23838
+  m_Name: pb_Mesh143334
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1627,12 +1631,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0b47c89c0007c442b8b744b0ed4a64b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponName: 
+  name: 
+  type: 
   canBePickedUp: 0
+  pickupText: {fileID: 0}
+  readyToBePickedUp: 0
   damage: 15
   damageType: PHYSICAL
+  attackRate: 0
+  projSpeed: 0
   isRanged: 0
   isTwoHanded: 0
+  isRaycast: 0
+  ShootRaycastIgnore:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!33 &639305222
 MeshFilter:
   m_ObjectHideFlags: 10
@@ -3524,9 +3537,11 @@ MonoBehaviour:
   rotX: 1
   rotY: 1
   rotZ: 1
+  rotOffset: {x: 0, y: 0, z: 0, w: 0}
   posX: 0
   posY: 0
   posZ: 0
+  posOffset: {x: 0, y: 0, z: 0}
 --- !u!4 &714715079
 Transform:
   m_ObjectHideFlags: 0
@@ -3550,7 +3565,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh23972
+  m_Name: pb_Mesh143470
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -3835,12 +3850,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0b47c89c0007c442b8b744b0ed4a64b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponName: 
+  name: 
+  type: 
   canBePickedUp: 0
+  pickupText: {fileID: 0}
+  readyToBePickedUp: 0
   damage: 15
   damageType: PHYSICAL
+  attackRate: 0
+  projSpeed: 0
   isRanged: 0
   isTwoHanded: 0
+  isRaycast: 0
+  ShootRaycastIgnore:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!33 &1081575476
 MeshFilter:
   m_ObjectHideFlags: 10
@@ -6126,6 +6150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enablePlayerMovementControls: 0
   enablePlayerCameraControls: 0
+  timeScale: 1
 --- !u!4 &1650837856
 Transform:
   m_ObjectHideFlags: 0
@@ -6371,9 +6396,11 @@ MonoBehaviour:
   rotX: 1
   rotY: 1
   rotZ: 1
+  rotOffset: {x: 0, y: 0, z: 0, w: 0}
   posX: 0
   posY: 0
   posZ: 0
+  posOffset: {x: 0, y: 0, z: 0}
 --- !u!4 &1749857159
 Transform:
   m_ObjectHideFlags: 0
@@ -6980,19 +7007,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mouseSensitivity: {x: 0, y: 0}
   gameLogic: {fileID: 1650837855}
+  firstPersonCamera: {fileID: 0}
+  healthSlider: {fileID: 0}
+  jetpackFuelSlider: {fileID: 0}
   currentHp: 0
   maxHp: 100
   walkSpeed: 3
+  runSpeed: 3.5
   sprintSpeed: 6
   jumpPower: 6
+  jetpackPower: 1
+  jetpackFuel: 0
+  maxJetpackFuel: 100
+  fuelRegenAmount: 2
   playerHeight: 2
-  jumpReady: 0
-  doubleJumpReady: 0
+  canRegenHp: 0
+  canRegenFuel: 1
+  canSprint: 1
+  stamina: 0
+  maxStamina: 100
+  groundDrag: 5
+  airDragReduction: 2.5
+  rotation: {x: 0, y: 0}
   unlockDoubleJump: 0
-  inventory: []
+  unlockJetpack: 0
+  unlockJetpackDash: 0
+  playerItems: []
+  playerWeapons: []
+  currentWeapon: {fileID: 0}
+  itemToPickup: {fileID: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  timeToZoom: 0.1
+  zoomedFov: 40
+  enableJetpack: 1
 --- !u!136 &1995141052
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -7035,14 +7084,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caa869c8cf862d741bf03a622abdeb16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 55
 --- !u!43 &2042977445
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh23892
+  m_Name: pb_Mesh143386
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -7621,6 +7669,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2710217402980759022, guid: f0e9867bb98f7584d8f5bc8b3629b323, type: 3}
+      propertyPath: path
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2710217402980759022, guid: f0e9867bb98f7584d8f5bc8b3629b323, type: 3}
+      propertyPath: velocity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2710217402980759022, guid: f0e9867bb98f7584d8f5bc8b3629b323, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2710217402980759022, guid: f0e9867bb98f7584d8f5bc8b3629b323, type: 3}
+      propertyPath: desiredVelocity
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f0e9867bb98f7584d8f5bc8b3629b323, type: 3}
 --- !u!1001 &7451550461664406945
@@ -7682,6 +7746,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7451550461630094138, guid: 818115068ebeb004d9f2b41cf1689ee1, type: 3}
+      propertyPath: path
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7451550461630094138, guid: 818115068ebeb004d9f2b41cf1689ee1, type: 3}
+      propertyPath: velocity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7451550461630094138, guid: 818115068ebeb004d9f2b41cf1689ee1, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7451550461630094138, guid: 818115068ebeb004d9f2b41cf1689ee1, type: 3}
+      propertyPath: desiredVelocity
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 818115068ebeb004d9f2b41cf1689ee1, type: 3}
 --- !u!1001 &7501582430865789648
@@ -7694,6 +7774,22 @@ PrefabInstance:
     - target: {fileID: 7501582430304662466, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
       propertyPath: m_Name
       value: AiAgent_Big
+      objectReference: {fileID: 0}
+    - target: {fileID: 7501582430304662468, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
+      propertyPath: path
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7501582430304662468, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
+      propertyPath: velocity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7501582430304662468, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7501582430304662468, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
+      propertyPath: desiredVelocity
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7501582430304662469, guid: 15c3ed4b65cbb8a45bdab7361935666f, type: 3}
       propertyPath: playerTransform

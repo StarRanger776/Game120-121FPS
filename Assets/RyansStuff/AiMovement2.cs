@@ -17,6 +17,7 @@ public class AiMovement2 : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        playerTransform = Camera.main.transform;
         //animator = GetComponent<Animator>();
     }
 
