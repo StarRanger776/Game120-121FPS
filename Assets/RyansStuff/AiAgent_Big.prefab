@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 7501582430304662469}
   - component: {fileID: 7501582430304662468}
   - component: {fileID: 7501582430304662467}
-  - component: {fileID: 8592179816605734334}
   m_Layer: 0
   m_Name: AiAgent_Big
   m_TagString: Untagged
@@ -162,19 +161,6 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &8592179816605734334
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7501582430304662466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eafca0c760468e34fb6c0c5e7c5b6fd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  health: 80
 --- !u!1 &7501582430314956382
 GameObject:
   m_ObjectHideFlags: 0
@@ -187,7 +173,7 @@ GameObject:
   - component: {fileID: 7501582430314956354}
   - component: {fileID: 7501582430314956353}
   - component: {fileID: 7501582430314956352}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Eye2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -284,7 +270,7 @@ GameObject:
   - component: {fileID: 7501582430363965803}
   - component: {fileID: 7501582430363965802}
   - component: {fileID: 7501582430363965801}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Foot1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -381,7 +367,7 @@ GameObject:
   - component: {fileID: 7501582430482542693}
   - component: {fileID: 7501582430482542692}
   - component: {fileID: 7501582430482542691}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Foot2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -475,7 +461,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7501582430680424146}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: ShootPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -509,7 +495,7 @@ GameObject:
   - component: {fileID: 7501582431029585156}
   - component: {fileID: 7501582431029585155}
   - component: {fileID: 7501582431029585154}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Foot3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -606,7 +592,7 @@ GameObject:
   - component: {fileID: 7501582431235020109}
   - component: {fileID: 7501582431235020108}
   - component: {fileID: 7501582431235020107}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Eye1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -703,7 +689,7 @@ GameObject:
   - component: {fileID: 7501582431406698381}
   - component: {fileID: 7501582431406698380}
   - component: {fileID: 7501582431406698379}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Foot4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -799,7 +785,7 @@ GameObject:
   - component: {fileID: 7501582431498999054}
   - component: {fileID: 7501582431498999088}
   - component: {fileID: 7501582431498999055}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Detect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -863,7 +849,7 @@ GameObject:
   - component: {fileID: 7501582431594682412}
   - component: {fileID: 7501582431594682411}
   - component: {fileID: 7501582431594682410}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Gun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
