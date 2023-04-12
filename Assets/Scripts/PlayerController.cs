@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
     private bool jumpReady;
     private bool doubleJumpReady;
     private bool enablePlayerMovementControls, enablePlayerCameraControls; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
-    public bool canRegenHp = true;
+    public bool canRegenHp = false; // regen Hp over time
     public bool canRegenFuel = true;
     private float defaultFov;
     public bool canSprint = true;
@@ -403,17 +403,41 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             // pickup item
-            if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && !itemToPickup.type.ToUpper().Equals("WEAPON"))
+            if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("WEAPON"))
             {
-                playerItems.Add(itemToPickup);
+                if (itemToPickup.transform.parent != null)
+                {
+                    DontDestroyOnLoad(itemToPickup.transform.parent);
+                }
+                else
+                {
+                    DontDestroyOnLoad(itemToPickup);
+                }
+                playerWeapons.Add((Weapon)itemToPickup);
                 itemToPickup.gameObject.SetActive(false);
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
             }
-            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("WEAPON"))
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("BASIC HEALTH PACK"))
             {
-                playerWeapons.Add((Weapon)itemToPickup);
+                currentHp += 20;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp) // create other pickups ABOVE this pickup. this should be last ALWAYS
+            {
+                if (itemToPickup.transform.parent != null)
+                {
+                    DontDestroyOnLoad(itemToPickup.transform.parent);
+                }
+                else
+                {
+                    DontDestroyOnLoad(itemToPickup);
+                }
+                playerItems.Add(itemToPickup);
                 itemToPickup.gameObject.SetActive(false);
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
@@ -526,6 +550,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void TakeDamage(int damage)
+    {
+        currentHp -= damage;
+    }
+
     private IEnumerator DoubleJump()
     {
         if (unlockDoubleJump && doubleJumpReady && !isGrounded && enablePlayerMovementControls)
@@ -595,6 +624,7 @@ public class PlayerController : MonoBehaviour
         zoomRoutine = null;
     }
 
+
     private IEnumerator PlayerDeath()
     {
         Time.timeScale = 0; // pauses the game, can instead pause the editor but that won't work for an actual BUILD of a unity game
@@ -603,5 +633,33 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         yield return null;
+    }
+    private bool invincibleEnabled = false;
+    [SerializeField]
+    private float invincCooldown = 3.0f;
+    private int speed = 5;
+    void update()
+    {
+
+    }
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            if (invincibleEnabled == false)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+    public void InvincEnabled()
+    {
+        invincibleEnabled = true;
+        StartCoroutine(InvincDisableRoutine());
+    }
+    IEnumerator InvincDisableRoutine()
+    {
+        yield return new WaitForSeconds(invincCooldown);
+        invincibleEnabled = false;
     }
 }

@@ -18,7 +18,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (currentHealth <= 0)
         {
-            //Destroy(gameObject);
+            Destroy(gameObject);
         }
     }
      public void damagePlayer(int damage)
