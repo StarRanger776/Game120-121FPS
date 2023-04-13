@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rb;
     public Slider healthSlider;
     public Slider jetpackFuelSlider;
+    public GameObject flashlight;
+    private Light _flashlightLight;
 
     [Header("Player Variables")]
     public int currentHp;
@@ -47,6 +49,7 @@ public class PlayerController : MonoBehaviour
     private bool isWalking = false;
     [HideInInspector]
     public Vector2 rotation;
+    private bool flashlightEnabled = false;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -79,6 +82,7 @@ public class PlayerController : MonoBehaviour
         _player = this.gameObject;
         _rb = GetComponent<Rigidbody>();
         orientation = this.transform;
+        _flashlightLight = flashlight.GetComponent<Light>();
 
         // lock cursor to game window center and make it invisible
         Cursor.lockState = CursorLockMode.Locked;
@@ -427,6 +431,14 @@ public class PlayerController : MonoBehaviour
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
             }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE HEALTH PACK"))
+            {
+                currentHp += 100;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp) // create other pickups ABOVE this pickup. this should be last ALWAYS
             {
                 if (itemToPickup.transform.parent != null)
@@ -445,8 +457,19 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // toggle flashlight
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            if (flashlightEnabled)
+                flashlight.SetActive(false);
+            else if (!flashlightEnabled)
+                flashlight.SetActive(true);
+
+            flashlightEnabled = !flashlightEnabled;
+        }
+
         // Slow down time (editor only)
-        if (UnityEditor.EditorApplication.isPlaying) // this will prevent the project from building, remove the slow-time code before building. this feature should not be in a build
+        if (true) // this will prevent the project from building, remove the slow-time code before building. this feature should not be in a build
         {
             if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.Plus))
             {
