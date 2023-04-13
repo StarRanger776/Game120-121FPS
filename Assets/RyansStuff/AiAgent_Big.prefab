@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7501582430304662469}
   - component: {fileID: 7501582430304662468}
   - component: {fileID: 7501582430304662467}
+  - component: {fileID: 3129483844989154590}
   m_Layer: 0
   m_Name: AiAgent_Big
   m_TagString: Untagged
@@ -121,7 +122,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae248096e0aa11543882df62dd1a2b80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
   maxTime: 1
   maxDistance: 100
 --- !u!114 &7501582430304662468
@@ -161,6 +161,19 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &3129483844989154590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501582430304662466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eafca0c760468e34fb6c0c5e7c5b6fd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 80
 --- !u!1 &7501582430314956382
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,7 +798,7 @@ GameObject:
   - component: {fileID: 7501582431498999054}
   - component: {fileID: 7501582431498999088}
   - component: {fileID: 7501582431498999055}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect
   m_TagString: Untagged
   m_Icon: {fileID: 0}

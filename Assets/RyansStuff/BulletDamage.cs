@@ -9,7 +9,7 @@ public class BulletDamage : MonoBehaviour
     {
         if (other.gameObject.tag == "Player")
         {
-            other.gameObject.GetComponent<PlayerHealth>().damagePlayer(bulletDamage);
+            other.gameObject.GetComponent<PlayerController>().TakeDamage(bulletDamage);
             Destroy(gameObject);
         }
     }

@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class AiMovement2 : MonoBehaviour
 {
-    public Transform playerTransform;
+    private Transform playerTransform;
     public float maxTime = 1.0f;
     public float maxDistance = 1.0f;
 
@@ -17,6 +17,7 @@ public class AiMovement2 : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        playerTransform = Camera.main.transform;
        // animator = GetComponent<Animator>();
     }
 
