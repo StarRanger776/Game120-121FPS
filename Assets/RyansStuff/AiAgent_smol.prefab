@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 7451550461521884200}
   - component: {fileID: 7451550461521884203}
   - component: {fileID: 7451550461521884202}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 7451550461630094132}
   - component: {fileID: 7451550461630094138}
   - component: {fileID: 7451550461630094139}
+  - component: {fileID: 2638846157320559020}
   m_Layer: 0
   m_Name: AiAgent_smol
   m_TagString: Untagged
@@ -312,7 +313,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae248096e0aa11543882df62dd1a2b80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
   maxTime: 1
   maxDistance: 10
 --- !u!114 &7451550461630094138
@@ -352,6 +352,19 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &2638846157320559020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7451550461630094133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eafca0c760468e34fb6c0c5e7c5b6fd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 5
 --- !u!1 &7451550461682681731
 GameObject:
   m_ObjectHideFlags: 0

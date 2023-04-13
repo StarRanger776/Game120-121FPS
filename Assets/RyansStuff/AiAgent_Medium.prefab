@@ -532,6 +532,7 @@ GameObject:
   - component: {fileID: 2710217402980759008}
   - component: {fileID: 2710217402980759022}
   - component: {fileID: 2710217402980759023}
+  - component: {fileID: 1142382384321514625}
   m_Layer: 0
   m_Name: AiAgent_Medium
   m_TagString: Untagged
@@ -643,7 +644,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae248096e0aa11543882df62dd1a2b80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
   maxTime: 1
   maxDistance: 12
 --- !u!114 &2710217402980759022
@@ -683,6 +683,19 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1142382384321514625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2710217402980759009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eafca0c760468e34fb6c0c5e7c5b6fd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 20
 --- !u!1 &2710217403062380887
 GameObject:
   m_ObjectHideFlags: 0
@@ -888,7 +901,7 @@ GameObject:
   - component: {fileID: 2710217403489000188}
   - component: {fileID: 2710217403489000191}
   - component: {fileID: 2710217403489000190}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1080,7 +1093,7 @@ GameObject:
   - component: {fileID: 5797383117216940087}
   - component: {fileID: 5797383117216940073}
   - component: {fileID: 5797383117216940086}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1241,7 +1254,7 @@ GameObject:
   - component: {fileID: 5797383117590522849}
   - component: {fileID: 5797383117590522851}
   - component: {fileID: 5797383117590522848}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1335,7 +1348,7 @@ GameObject:
   - component: {fileID: 5797383117920016435}
   - component: {fileID: 5797383117920016437}
   - component: {fileID: 5797383117920016434}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Detect (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
