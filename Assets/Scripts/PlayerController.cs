@@ -647,7 +647,6 @@ public class PlayerController : MonoBehaviour
         zoomRoutine = null;
     }
 
-
     private IEnumerator PlayerDeath()
     {
         Time.timeScale = 0; // pauses the game, can instead pause the editor but that won't work for an actual BUILD of a unity game
@@ -656,33 +655,5 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         yield return null;
-    }
-    private bool invincibleEnabled = false;
-    [SerializeField]
-    private float invincCooldown = 3.0f;
-    private int speed = 5;
-    void update()
-    {
-
-    }
-    private void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            if (invincibleEnabled == false)
-            {
-                Destroy(gameObject);
-            }
-        }
-    }
-    public void InvincEnabled()
-    {
-        invincibleEnabled = true;
-        StartCoroutine(InvincDisableRoutine());
-    }
-    IEnumerator InvincDisableRoutine()
-    {
-        yield return new WaitForSeconds(invincCooldown);
-        invincibleEnabled = false;
     }
 }
