@@ -8,6 +8,16 @@ public class MenuButtons : MonoBehaviour
     public GameObject optionsCanvas;
     public GameObject mainCanvas;
 
+    public float xSens;
+    public float ySens;
+
+    private Settings curSettings;
+
+    private void Awake()
+    {
+        curSettings = Settings.instance;
+    }
+
     public void StartGame()
     {
         SceneManager.LoadScene("LoadFirstAfterMainMenu");
@@ -31,5 +41,19 @@ public class MenuButtons : MonoBehaviour
             Debug.Log("ERROR: No Options Menu Found");
         }
     }
+
+    public void exitOptions() 
+    {
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(true);
+            optionsCanvas.SetActive(false);
+        }
+        else
+        {
+            Debug.Log("ERROR: No Main Menu Found");
+        }
+    }
     public void Placeholder() { return; }
 }
+
