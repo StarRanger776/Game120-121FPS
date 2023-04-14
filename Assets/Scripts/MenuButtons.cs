@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class MenuButtons : MonoBehaviour
 {
+    public GameObject optionsCanvas;
+    public GameObject mainCanvas;
+
     public void StartGame()
     {
         SceneManager.LoadScene("LoadFirstAfterMainMenu");
@@ -12,6 +15,21 @@ public class MenuButtons : MonoBehaviour
 
     public void ExitGame()
     {
-
+        Application.Quit();
     }
+
+    //Options Menu
+    public void Options() 
+    { 
+        if(optionsCanvas != null) 
+        {
+            optionsCanvas.SetActive(true);
+            mainCanvas.SetActive(false);
+        }
+        else 
+        {
+            Debug.Log("ERROR: No Options Menu Found");
+        }
+    }
+    public void Placeholder() { return; }
 }
