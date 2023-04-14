@@ -443,6 +443,14 @@ public class PlayerController : MonoBehaviour
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
             }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("JET REFUEL"))
+            {
+                jetpackFuel = (int)maxJetpackFuel;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp) // create other pickups ABOVE this pickup. this should be last ALWAYS
             {
                 if (itemToPickup.transform.parent != null)
