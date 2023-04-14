@@ -8,9 +8,6 @@ public class MenuButtons : MonoBehaviour
     public GameObject optionsCanvas;
     public GameObject mainCanvas;
 
-    public float xSens;
-    public float ySens;
-
     private Settings curSettings;
 
     private void Awake()
@@ -28,7 +25,6 @@ public class MenuButtons : MonoBehaviour
         Application.Quit();
     }
 
-    //Options Menu
     public void Options() 
     { 
         if(optionsCanvas != null) 
@@ -42,6 +38,7 @@ public class MenuButtons : MonoBehaviour
         }
     }
 
+    //Options Menu
     public void exitOptions() 
     {
         if (mainCanvas != null)
