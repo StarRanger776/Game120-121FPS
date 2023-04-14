@@ -8,6 +8,7 @@ public class BulletLogic : MonoBehaviour
     public float speed = 20f;
     public float lifeSpan = 10;
     public float startingLifeSpan = 10;
+    public int bulletDamage;
 
 
     [Tooltip("units per second")]
@@ -37,11 +38,16 @@ public class BulletLogic : MonoBehaviour
 
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter(Collision collider)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collider.gameObject.tag.Equals("Player"))
         {
-            Destroy(this);
+            collider.gameObject.GetComponent<PlayerController>().TakeDamage(bulletDamage);
+            Destroy(this.gameObject);
+        }
+        else if (!collider.gameObject.tag.Equals("IgnoreBulletCollisions"))
+        {
+            Destroy(this.gameObject);
         }
     }
 }

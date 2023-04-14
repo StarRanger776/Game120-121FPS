@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     [HideInInspector]
     public Vector2 rotation;
     private bool flashlightEnabled = false;
+    public float gravityMultiplier = 1.0f;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -122,6 +123,7 @@ public class PlayerController : MonoBehaviour
         canZoom = true;
 
         _rb.freezeRotation = true;
+        _rb.useGravity = false;
     }
 
     private void Update()
@@ -219,6 +221,8 @@ public class PlayerController : MonoBehaviour
         {
             currentWeapon.ShootRaycast();
         }
+
+        _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 5));
     }
 
     private void FixedUpdate()
