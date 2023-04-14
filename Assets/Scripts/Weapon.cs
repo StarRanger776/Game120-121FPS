@@ -26,13 +26,24 @@ public class Weapon : ItemBase
 
             if (Physics.Raycast(ray, out hit, 100, ~ShootRaycastIgnore))
             {
+                Enemy enemyToDamage;
+
                 Transform objectHit = hit.transform;
+
+                if (objectHit.parent != null)
+                {
+                    enemyToDamage = objectHit.parent.GetComponent<Enemy>();
+                }
+                else
+                {
+                    enemyToDamage = objectHit.GetComponent<Enemy>();
+                }
 
                 Debug.Log(objectHit.name);
 
-                if (objectHit.GetComponent<Enemy>())
+                if (enemyToDamage != null)
                 {
-                    objectHit.GetComponent<Enemy>().TakeDamage(damage);
+                    enemyToDamage.TakeDamage(damage);
                 }
             }
         }

@@ -808,7 +808,7 @@ Rigidbody:
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 112
@@ -850,6 +850,7 @@ MonoBehaviour:
   groundDrag: 5
   airDragReduction: 2.5
   rotation: {x: 0, y: 0}
+  gravityMultiplier: 1
   unlockDoubleJump: 1
   unlockJetpack: 1
   unlockJetpackDash: 0
@@ -1854,7 +1855,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh271252
+  m_Name: pb_Mesh34188
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -3386,7 +3387,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh271388
+  m_Name: pb_Mesh34324
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
