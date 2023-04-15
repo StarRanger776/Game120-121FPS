@@ -224,8 +224,8 @@ public class PlayerController : MonoBehaviour
         }
 
         // new gravity
-        if (!jetpackInUse)
-            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 5));
+        if (!jetpackInUse || jetpackFuel <= 0)
+            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 987) * Time.deltaTime);
     }
 
     private void FixedUpdate()
