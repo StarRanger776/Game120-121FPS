@@ -851,8 +851,8 @@ MonoBehaviour:
   airDragReduction: 2.5
   rotation: {x: 0, y: 0}
   gravityMultiplier: 1
-  unlockDoubleJump: 1
-  unlockJetpack: 1
+  unlockDoubleJump: 0
+  unlockJetpack: 0
   unlockJetpackDash: 0
   playerItems: []
   playerWeapons:

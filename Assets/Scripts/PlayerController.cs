@@ -51,6 +51,7 @@ public class PlayerController : MonoBehaviour
     public Vector2 rotation;
     private bool flashlightEnabled = false;
     public float gravityMultiplier = 1.0f;
+    private bool jetpackInUse = false;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -222,7 +223,9 @@ public class PlayerController : MonoBehaviour
             currentWeapon.ShootRaycast();
         }
 
-        _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 5));
+        // new gravity
+        if (!jetpackInUse)
+            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 5));
     }
 
     private void FixedUpdate()
@@ -243,6 +246,10 @@ public class PlayerController : MonoBehaviour
             else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady)
             {
                 StartCoroutine(HandleJetpack());
+            }
+            else if (!Input.GetKey(KeyCode.Space))
+            {
+                jetpackInUse = false;
             }
 
             // need to set transform rotation BEFORE camera rotation (prevents camera jitter)
@@ -598,9 +605,11 @@ public class PlayerController : MonoBehaviour
     {
         if (jetpackFuel > 0 && enableJetpack && unlockJetpack)
         {
+            jetpackInUse = true;
+
             canRegenFuel = false;
 
-            _rb.velocity = (_rb.velocity * 0.965f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
+            _rb.velocity = (_rb.velocity * 0.97f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
 
             _rb.AddForce(Vector2.up * 0.095f, ForceMode.Impulse); // increases takeoff speed, and allows momentum change when falling
 
