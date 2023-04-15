@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 public class Weapon : ItemBase
@@ -8,49 +9,99 @@ public class Weapon : ItemBase
     [Header("Weapon")]
     public int damage;
     public string damageType; // if we want different damage types such as PHYSICAL or MAGICAL or elemental like FIRE etc...
-    public float attackRate; // should be attacks per second
+    public float attackDelay; // how long between attacks/shots
     public float projSpeed; // speed of fired projectile
     public bool isRanged;
     public bool isTwoHanded;
     public bool isRaycast;
+    public int loadedAmmo; // ammo in "clip"
+    public uint maxAmmoBeforeReload; // max ammo in "clip"
+    public bool readyToShoot = true;
 
     [Header("Misc")]
     public LayerMask ShootRaycastIgnore;
+    private Enemy _enemyToDamage;
+    public GameObject weaponToActivateOnPlayer;
+    [HideInInspector]
+    public Weapon weaponToUseOnPlayer;
+    public GameObject bullet;
+    private Transform _shootPoint;
+    private AudioSource _shootSound;
 
-    public void ShootRaycast()
+    private void Start()
     {
-        if (isRaycast)
+        if (weaponToActivateOnPlayer != null)
+            weaponToUseOnPlayer = weaponToActivateOnPlayer.GetComponent<Weapon>();
+
+        _shootPoint = this.transform.Find("Shoot Point");
+
+        _shootSound = GetComponent<AudioSource>();
+    }
+
+    public void Shoot()
+    {
+        if (isRanged)
+        {
+            if (isRaycast && readyToShoot)
+            {
+                StartCoroutine(ShootRaycast());
+            }
+            else
+            {
+                ShootBullet();
+            }
+        }
+        else
+        {
+            Debug.Log("Insert melee attack here!");
+        }
+    }
+
+    private IEnumerator ShootRaycast()
+    {
+        if (loadedAmmo > 0 && readyToShoot)
         {
             RaycastHit hit; //new raycast
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //direct raycast from camera to mouse position
+            readyToShoot = false;
+            loadedAmmo -= 1;
+            if (_shootSound != null)
+                _shootSound.Play();
 
             if (Physics.Raycast(ray, out hit, 100, ~ShootRaycastIgnore))
             {
-                Enemy enemyToDamage;
-
                 Transform objectHit = hit.transform;
 
                 if (objectHit.parent != null)
                 {
-                    enemyToDamage = objectHit.parent.GetComponent<Enemy>();
+                    _enemyToDamage = objectHit.parent.GetComponent<Enemy>();
                 }
                 else
                 {
-                    enemyToDamage = objectHit.GetComponent<Enemy>();
+                    _enemyToDamage = objectHit.GetComponent<Enemy>();
                 }
 
                 Debug.Log(objectHit.name);
 
-                if (enemyToDamage != null)
+                if (_enemyToDamage != null)
                 {
-                    enemyToDamage.TakeDamage(damage);
+                    _enemyToDamage.TakeDamage(damage);
                 }
             }
+
+            // play shooting sound
+
         }
+        yield return new WaitForSeconds(attackDelay);
+
+        readyToShoot = true;
     }
 
-    public void ShootBullet()
+    private void ShootBullet()
     {
-        
+        if (loadedAmmo > 0)
+        {
+            //GameObject currentBullet = Instantiate(bullet, shootPoint.position, shootPoint.rotation);
+        }
     }
 }
