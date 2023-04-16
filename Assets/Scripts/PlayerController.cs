@@ -219,7 +219,77 @@ public class PlayerController : MonoBehaviour
             if(currentWeapon.name == "Teslas Secret")
                 currentWeapon.ShootBullet();
             else
+<<<<<<< Updated upstream
                 currentWeapon.ShootRaycast();
+=======
+            {
+                if (currentWeapon.type.ToUpper().Equals("PISTOL"))
+                {
+                    if (currentPistolAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                    {
+                        currentPistolAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                    }
+                    else
+                    {
+                        currentWeapon.loadedAmmo = currentPistolAmmo;
+                        currentPistolAmmo = 0;
+                    }
+                }
+                else if (currentWeapon.type.ToUpper().Equals("RIFLE"))
+                {
+                    if (currentRifleAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                    {
+                        currentRifleAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                    }
+                    else
+                    {
+                        currentWeapon.loadedAmmo = currentRifleAmmo;
+                        currentRifleAmmo = 0;
+                    }
+                }
+                else if (currentWeapon.type.ToUpper().Equals("PLASMA"))
+                {
+                    if (currentPhysicsAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                    {
+                        currentPhysicsAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                    }
+                    else
+                    {
+                        currentWeapon.loadedAmmo = currentPhysicsAmmo;
+                        currentPhysicsAmmo = 0;
+                    }
+                }
+            }
+        }
+
+        // new gravity
+        if (!jetpackInUse || jetpackFuel <= 0)
+            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 987) * Time.deltaTime);
+
+        // match weapon to item
+        if (itemToPickup != null && itemToPickup.type.ToUpper().Equals("WEAPON"))
+        {
+            weaponToPickup = (Weapon)itemToPickup;
+        }
+        else if (itemToPickup == null)
+        {
+            weaponToPickup = null;
+        }
+
+        // switches the hands to the correct layout
+        if (currentWeapon.isTwoHanded)
+        {
+            rightArmOnly.SetActive(false);
+            bothArms.SetActive(true);
+        }
+        else if (!currentWeapon.isTwoHanded)
+        {
+            bothArms.SetActive(false);
+            rightArmOnly.SetActive(true);
+>>>>>>> Stashed changes
         }
     }
 
@@ -512,8 +582,10 @@ public class PlayerController : MonoBehaviour
             {
                 // play unequip animation
                 // disable currentWeapon gameObject
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex += 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 // enable currentWeapon gameObject
                 // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
@@ -522,8 +594,10 @@ public class PlayerController : MonoBehaviour
             {
                 // play unequip animation
                 // disable currentWeapon gameObject
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = 0;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 // enable currentWeapon gameObject
                 // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
@@ -537,8 +611,10 @@ public class PlayerController : MonoBehaviour
             {
                 // play unequip animation
                 // disable currentWeapon gameObject
+                currentWeapon.gameObject.SetActive(false);
                 currentWeapon = playerWeapons[currentWeaponIndex - 1];
                 currentWeaponIndex -= 1;
+                currentWeapon.gameObject.SetActive(true);
                 // enable currentWeapon gameObject
                 // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
@@ -547,8 +623,10 @@ public class PlayerController : MonoBehaviour
             {
                 // play unequip animation
                 // disable currentWeapon gameObject
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = playerWeapons.Count - 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 // enable currentWeapon gameObject
                 // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
