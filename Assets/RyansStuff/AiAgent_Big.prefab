@@ -136,9 +136,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8dfc322f2f92047aa97b33dbb9aa72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocity: 1
-  desiredVelocity: 1
-  path: 1
+  velocity: 0
+  desiredVelocity: 0
+  path: 0
 --- !u!195 &7501582430304662467
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 5703083425027810643}
   - component: {fileID: 5703083425024910707}
   - component: {fileID: 5703083425025910707}
-  - component: {fileID: 8374345042277140382}
+  - component: {fileID: 1008378189837819075}
   m_Layer: 9
   m_Name: Tunnel Ceiling006
   m_TagString: Untagged
@@ -167,8 +167,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &8374345042277140382
-BoxCollider:
+--- !u!64 &1008378189837819075
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -177,9 +177,10 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 6.0000005, y: 0.20000124, z: 6.000001}
-  m_Center: {x: 3.0000098, y: 4.6500273, z: 2.9999952}
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300004, guid: f2d541cec9cde3e4aab35063c6ee1a61, type: 3}
 --- !u!1 &5703083425027914101
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,7 +192,7 @@ GameObject:
   - component: {fileID: 5703083425027810645}
   - component: {fileID: 5703083425024910709}
   - component: {fileID: 5703083425025910709}
-  - component: {fileID: 2599406370710075664}
+  - component: {fileID: 1859136255948316525}
   m_Layer: 9
   m_Name: Tunnel Floor006
   m_TagString: Untagged
@@ -264,8 +265,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2599406370710075664
-BoxCollider:
+--- !u!64 &1859136255948316525
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -274,9 +275,10 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 6.0000024, y: 0.25, z: 6.0000005}
-  m_Center: {x: 3.0000098, y: -0.12497161, z: 2.9999945}
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300010, guid: f2d541cec9cde3e4aab35063c6ee1a61, type: 3}
 --- !u!1 &5703083425027914103
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +373,7 @@ GameObject:
   - component: {fileID: 5703083425027810649}
   - component: {fileID: 5703083425024910713}
   - component: {fileID: 5703083425025910713}
+  - component: {fileID: 8709791033727777471}
   m_Layer: 0
   m_Name: Tunnel Window
   m_TagString: Untagged
@@ -443,6 +446,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &8709791033727777471
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5703083425027914105}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300002, guid: f2d541cec9cde3e4aab35063c6ee1a61, type: 3}
 --- !u!1 &5703083425027914107
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,6 +471,7 @@ GameObject:
   - component: {fileID: 5703083425027810651}
   - component: {fileID: 5703083425024910715}
   - component: {fileID: 5703083425025910715}
+  - component: {fileID: 3713301049874208393}
   m_Layer: 0
   m_Name: Tunnel Window Frame
   m_TagString: Untagged
@@ -526,6 +544,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &3713301049874208393
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5703083425027914107}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: f2d541cec9cde3e4aab35063c6ee1a61, type: 3}
 --- !u!1 &5703083425027914109
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,8 +569,7 @@ GameObject:
   - component: {fileID: 5703083425027810653}
   - component: {fileID: 5703083425024910717}
   - component: {fileID: 5703083425025910717}
-  - component: {fileID: 8038130919117971831}
-  - component: {fileID: 3275949877562091696}
+  - component: {fileID: 9210568193172228653}
   m_Layer: 0
   m_Name: Tunnel Window Wall
   m_TagString: Untagged
@@ -611,8 +642,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &8038130919117971831
-BoxCollider:
+--- !u!64 &9210568193172228653
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -621,22 +652,10 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.93930626, y: 5.799975, z: 5.9999995}
-  m_Center: {x: 5.680358, y: 1.9000142, z: 2.999995}
---- !u!65 &3275949877562091696
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5703083425027914109}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.9812479, y: 5.799975, z: 5.9999995}
-  m_Center: {x: 0.34063292, y: 1.9000142, z: 2.999995}
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300012, guid: f2d541cec9cde3e4aab35063c6ee1a61, type: 3}
 --- !u!1 &5703083425027914111
 GameObject:
   m_ObjectHideFlags: 0
