@@ -6,10 +6,13 @@ using UnityEngine.SceneManagement;
 public class LoadSceneOnAwake : MonoBehaviour
 {
     public string sceneToLoad;
-    public PlayerController player;
+    private PlayerController player;
+    public Vector3 spawnPoint;
 
     private void Awake()
     {
+        player = FindObjectOfType<PlayerController>();
+
         if (player != null && sceneToLoad != null)
         {
             Camera mainCamera = Camera.main;
@@ -17,6 +20,9 @@ public class LoadSceneOnAwake : MonoBehaviour
             player.rotation.x = 0;
             player.rotation.y = -90;
             SceneManager.LoadScene(sceneToLoad);
+            player.gameLogic.enablePlayerCameraControls = true;
+            player.gameLogic.enablePlayerMovementControls = true;
+            player.gameLogic.enablePlayerGravity = true;
         }
         else if (player != null && sceneToLoad == null)
         {

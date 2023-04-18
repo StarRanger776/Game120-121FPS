@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class GameLogic : MonoBehaviour
 {
-    public bool enablePlayerMovementControls, enablePlayerCameraControls;
+    public bool enablePlayerMovementControls, enablePlayerCameraControls, enablePlayerGravity;
     public float timeScale = 1.0f;
 }

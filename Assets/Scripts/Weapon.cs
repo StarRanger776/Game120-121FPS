@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -17,6 +18,9 @@ public class Weapon : ItemBase
     public int loadedAmmo; // ammo in "clip"
     public uint maxAmmoBeforeReload; // max ammo in "clip"
     public bool readyToShoot = true;
+    public float reloadTime = 1.0f; // time to reload in seconds
+    public float lowRecoilAmount; // low is the lowest possible recoil amount, high is the highest possible recoil amount
+    public float highRecoilAmount; // will need to tweak it to get your desired recoil for each weapon
 
     [Header("Misc")]
     public LayerMask ShootRaycastIgnore;
@@ -27,6 +31,7 @@ public class Weapon : ItemBase
     public GameObject bullet;
     private Transform _shootPoint;
     private AudioSource _shootSound;
+    private PlayerController _player;
 
     private void Start()
     {
@@ -36,6 +41,8 @@ public class Weapon : ItemBase
         _shootPoint = this.transform.Find("Shoot Point");
 
         _shootSound = GetComponent<AudioSource>();
+
+        _player = FindObjectOfType<PlayerController>();
     }
 
     public void Shoot()
@@ -65,6 +72,7 @@ public class Weapon : ItemBase
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //direct raycast from camera to mouse position
             readyToShoot = false;
             loadedAmmo -= 1;
+            _player.rotation.x -= UnityEngine.Random.Range(lowRecoilAmount, highRecoilAmount);
             if (_shootSound != null)
                 _shootSound.Play();
 
