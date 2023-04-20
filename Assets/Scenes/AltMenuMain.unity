@@ -2470,7 +2470,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh222530
+  m_Name: pb_Mesh287648
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2853,7 +2853,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh222220
+  m_Name: pb_Mesh287336
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -3025,6 +3025,7 @@ GameObject:
   - component: {fileID: 964821584}
   - component: {fileID: 964821583}
   - component: {fileID: 964821588}
+  - component: {fileID: 964821589}
   m_Layer: 5
   m_Name: PlayerCanvas
   m_TagString: Untagged
@@ -3138,6 +3139,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7451d15c9d050d439aaf5ec1e5aaa23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &964821589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 964821582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e99e96c5fa9e24ca74d6a913c2eb33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &976576125
@@ -8604,7 +8617,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh222208
+  m_Name: pb_Mesh287324
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -9315,9 +9328,9 @@ MonoBehaviour:
   rotation: {x: 0, y: 0}
   dashSpeed: 10
   gravityMultiplier: 1
-  unlockDoubleJump: 0
-  unlockJetpack: 0
-  unlockJetpackDash: 0
+  unlockDoubleJump: 1
+  unlockJetpack: 1
+  unlockJetpackDash: 1
   playerItems: []
   playerWeapons:
   - {fileID: 1291979906}
@@ -9338,6 +9351,8 @@ MonoBehaviour:
   zoomedFov: 40
   timeToCrouch: 0.1
   readyToDash: 1
+  isRegeningHp: 0
+  isRegeningFuel: 0
 --- !u!4 &1674234016
 Transform:
   m_ObjectHideFlags: 0

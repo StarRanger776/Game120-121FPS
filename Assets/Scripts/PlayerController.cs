@@ -89,14 +89,18 @@ public class PlayerController : MonoBehaviour
     private Coroutine zoomRoutine;
     private Coroutine crouchRoutine;
     private Coroutine dashRoutine;
+    private Coroutine refuelRoutine;
+    private Coroutine regenRoutine;
     private bool enableJetpack = true; // the player may not want to always have the jetpack enabled
     private bool jetpackInUse = false;
     private bool isJumping = false;
     // private bool isCrouching = false;
     private bool isReloading = false;
     public bool readyToDash = true;
+    public bool isRegeningHp = false;
+    public bool isRegeningFuel = false;
 
-    private void Start()
+    private void Awake()
     {
         // object references initialized before anything else
         _mainCamera = Camera.main;
@@ -127,9 +131,6 @@ public class PlayerController : MonoBehaviour
 
         if (currentWeapon == null) // need to always have a weapon in the weapon list.
             currentWeapon = playerWeapons[0];
-
-        StartCoroutine(HealthRegen());
-        StartCoroutine(FuelRegen());
 
         canZoom = true;
 
@@ -310,6 +311,24 @@ public class PlayerController : MonoBehaviour
 
             // need to set transform rotation BEFORE camera rotation (prevents camera jitter)
             transform.rotation = Quaternion.Euler(0, rotation.y, 0);
+
+            // fuel regen
+            if (canRegenFuel)
+            {
+                if (!isRegeningFuel)
+                {
+                    StartCoroutine(FuelRegen());
+                }
+            }
+
+            // health regen
+            if (canRegenHp)
+            {
+                if (!isRegeningHp)
+                {
+                    StartCoroutine(HealthRegen());
+                }
+            }
         }
     }
 
@@ -797,23 +816,29 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator FuelRegen()
     {
-        while (true)
+        while (canRegenFuel)
         {
+            isRegeningFuel = true;
+
             if (jetpackFuel < maxJetpackFuel && !jetpackInUse && canRegenFuel)
             {
                 jetpackFuel += fuelRegenAmount;
             }
             yield return new WaitForSeconds(0.05f);
+            isRegeningFuel = false;
         }
     }
 
     private IEnumerator HealthRegen()
     {
-        while (true)
+        while (canRegenHp)
         {
+            isRegeningHp = true;
+
             if (currentHp < (int)maxHp && canRegenHp)
                 currentHp += 1;
             yield return new WaitForSeconds(0.5f);
+            isRegeningHp = false;
         }
     }
 
