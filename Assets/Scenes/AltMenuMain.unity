@@ -9097,7 +9097,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &1674234015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9128,7 +9128,6 @@ MonoBehaviour:
   jetpackFuel: 100
   maxJetpackFuel: 100
   fuelRegenAmount: 2
-  playerHeight: 2
   canRegenHp: 0
   canRegenFuel: 1
   canSprint: 1
@@ -9137,10 +9136,11 @@ MonoBehaviour:
   groundDrag: 5
   airDragReduction: 2.5
   rotation: {x: 0, y: 0}
+  dashSpeed: 10
   gravityMultiplier: 1
   unlockDoubleJump: 0
   unlockJetpack: 0
-  unlockJetpackDash: 0
+  unlockJetpackDash: 1
   playerItems: []
   playerWeapons:
   - {fileID: 1291979906}
@@ -9153,13 +9153,14 @@ MonoBehaviour:
   maxLaserAmmo: 50
   itemToPickup: {fileID: 0}
   weaponToPickup: {fileID: 0}
+  switchToActivate: {fileID: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
   timeToZoom: 0.1
   zoomedFov: 40
   timeToCrouch: 0.1
-  enableJetpack: 1
+  readyToDash: 1
 --- !u!4 &1674234016
 Transform:
   m_ObjectHideFlags: 0

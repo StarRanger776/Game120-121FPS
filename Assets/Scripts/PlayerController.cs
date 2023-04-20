@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
     public int jetpackFuel;
     public uint maxJetpackFuel = 100;
     public int fuelRegenAmount = 2;
-    public float playerHeight = 2;
+    private float playerHeight = 2;
     private bool jumpReady;
     private bool doubleJumpReady;
     private bool enablePlayerMovementControls, enablePlayerCameraControls, enablePlayerGravity; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
@@ -52,8 +52,8 @@ public class PlayerController : MonoBehaviour
     [HideInInspector]
     public Vector2 rotation;
     private bool flashlightEnabled = false;
+    public float dashSpeed = 10f;
     public float gravityMultiplier = 1.0f;
-    private bool jetpackInUse = false;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -76,6 +76,8 @@ public class PlayerController : MonoBehaviour
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
     [HideInInspector]
     public Weapon weaponToPickup;
+    [HideInInspector]
+    public SwitchLogic switchToActivate;
 
     [Header("Misc")]
     public LayerMask groundLayer;
@@ -86,10 +88,13 @@ public class PlayerController : MonoBehaviour
     public float timeToCrouch = 0.1f;
     private Coroutine zoomRoutine;
     private Coroutine crouchRoutine;
-    public bool enableJetpack = true; // the player may not want to always have the jetpack enabled
+    private Coroutine dashRoutine;
+    private bool enableJetpack = true; // the player may not want to always have the jetpack enabled
+    private bool jetpackInUse = false;
     private bool isJumping = false;
     // private bool isCrouching = false;
     private bool isReloading = false;
+    public bool readyToDash = true;
 
     private void Start()
     {
@@ -169,6 +174,12 @@ public class PlayerController : MonoBehaviour
             HandleActions();
             HandleInventory();
             HandleCamera();
+
+            // dash
+            if (unlockJetpackDash && Input.GetKeyDown(KeyCode.X))
+            {
+                StartCoroutine(HandleDash());
+            }
 
             firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
@@ -467,19 +478,18 @@ public class PlayerController : MonoBehaviour
             // pickup item
             if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("WEAPON"))
             {
+                playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 if (itemToPickup.transform.parent != null)
                 {
-                    DontDestroyOnLoad(itemToPickup.transform.parent);
+                    Destroy(itemToPickup.transform.parent.gameObject);
                 }
                 else
                 {
-                    DontDestroyOnLoad(itemToPickup);
+                    Destroy(itemToPickup.gameObject);
                 }
-                playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
-                itemToPickup.gameObject.SetActive(false);
-                if (itemToPickup.pickupText != null)
-                    itemToPickup.pickupText.gameObject.SetActive(false);
-                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 itemToPickup = null;
             }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("BASIC HEALTH PACK"))
@@ -529,6 +539,12 @@ public class PlayerController : MonoBehaviour
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
+            }
+
+            // use switch
+            if (switchToActivate != null)
+            {
+                switchToActivate.isActivated = true;
             }
         }
 
@@ -726,6 +742,19 @@ public class PlayerController : MonoBehaviour
                     currentRifleAmmo = 0;
                 }
             }
+            else if (weaponType.ToUpper().Equals("LASER"))
+            {
+                if (currentLaserAmmo + currentWeapon.loadedAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentLaserAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = currentLaserAmmo;
+                    currentLaserAmmo = 0;
+                }
+            }
         }
         else
         {
@@ -820,6 +849,32 @@ public class PlayerController : MonoBehaviour
 
         _player.GetComponent<CapsuleCollider>().height = desiredHeight;
         crouchRoutine = null;
+    }
+
+    private IEnumerator HandleDash()
+    {
+        if (readyToDash)
+        {
+            _rb.AddForce(moveDirection.normalized * dashSpeed * 10, ForceMode.Impulse);
+            readyToDash = false;
+
+            if (dashRoutine != null)
+            {
+                StopCoroutine(dashRoutine);
+                dashRoutine = null;
+            }
+
+            StartCoroutine(ResetDash(true));
+        }
+
+        yield return null;
+    }
+
+    private IEnumerator ResetDash(bool resetDash)
+    {
+        yield return new WaitForSeconds(0.75f);
+
+        readyToDash = resetDash;
     }
 
     private IEnumerator PlayerDeath()

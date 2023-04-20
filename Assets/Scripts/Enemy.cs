@@ -20,12 +20,16 @@ public class Enemy : MonoBehaviour
         if (currentHp <= 0)
         {
             gameObject.SetActive(false);
-            healthSlider.gameObject.SetActive(false);
+            if (healthSlider != null)
+                healthSlider.gameObject.SetActive(false);
         }
         else
         {
-            healthSlider.value = currentHp;
-            healthSlider.maxValue = maxHp;
+            if (healthSlider != null)
+            {
+                healthSlider.value = currentHp;
+                healthSlider.maxValue = maxHp;
+            }
 
             if (currentHp > (int)maxHp)
             {
