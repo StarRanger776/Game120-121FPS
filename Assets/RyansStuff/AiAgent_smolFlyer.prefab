@@ -249,7 +249,7 @@ GameObject:
   - component: {fileID: 4775372041639632190}
   m_Layer: 0
   m_Name: Gun
-  m_TagString: Untagged
+  m_TagString: IgnoreBulletCollisions
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
