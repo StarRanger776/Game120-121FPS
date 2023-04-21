@@ -17,6 +17,10 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rb;
     public Slider healthSlider;
     public Slider jetpackFuelSlider;
+    public GameObject flashlight;
+    private Light _flashlightLight;
+    public GameObject rightArmOnly;
+    public GameObject bothArms;
 
     [Header("Player Variables")]
     public int currentHp;
@@ -34,7 +38,7 @@ public class PlayerController : MonoBehaviour
     private bool doubleJumpReady;
     private bool enablePlayerMovementControls, enablePlayerCameraControls; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
     public bool canRegenHp = false; // regen Hp over time
-    public bool canRegenFuel = true;
+    public bool canRegenFuel = true; // global fuel regen, never gets automatically enabled or disabled
     private float defaultFov;
     public bool canSprint = true;
     public int stamina;
@@ -47,6 +51,9 @@ public class PlayerController : MonoBehaviour
     private bool isWalking = false;
     [HideInInspector]
     public Vector2 rotation;
+    private bool flashlightEnabled = false;
+    public float gravityMultiplier = 1.0f;
+    private bool jetpackInUse = false;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -58,9 +65,19 @@ public class PlayerController : MonoBehaviour
     public List<Weapon> playerWeapons = new List<Weapon>();
     public Weapon currentWeapon;
     private int currentWeaponIndex = 0;
+    public int currentPistolAmmo;
+    public int currentRifleAmmo;
+    public int currentLaserAmmo;
+    public int currentPhysicsAmmo;
+    public uint maxPistolAmmo = 50;
+    public uint maxRifleAmmo = 60;
+    public uint maxLaserAmmo = 50;
+    public uint maxPhysicsAmmo = 10;
 
     [HideInInspector]
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
+    [HideInInspector]
+    public Weapon weaponToPickup;
 
     [Header("Misc")]
     public LayerMask groundLayer;
@@ -79,6 +96,7 @@ public class PlayerController : MonoBehaviour
         _player = this.gameObject;
         _rb = GetComponent<Rigidbody>();
         orientation = this.transform;
+        _flashlightLight = flashlight.GetComponent<Light>();
 
         // lock cursor to game window center and make it invisible
         Cursor.lockState = CursorLockMode.Locked;
@@ -118,6 +136,7 @@ public class PlayerController : MonoBehaviour
         canZoom = true;
 
         _rb.freezeRotation = true;
+        _rb.useGravity = false;
     }
 
     private void Update()
@@ -169,11 +188,6 @@ public class PlayerController : MonoBehaviour
             jetpackFuelSlider.maxValue = maxJetpackFuel;
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            canRegenFuel = true;
-        }
-
         if (isGrounded)
         {
             _rb.drag = groundDrag;
@@ -211,9 +225,84 @@ public class PlayerController : MonoBehaviour
             _rb.velocity = new Vector3(limitedVel.x, _rb.velocity.y, limitedVel.z);
         }
 
-        if (Input.GetMouseButtonDown(0) && currentWeapon != null)
+        if (currentPistolAmmo > maxPistolAmmo)
+            currentPistolAmmo = (int)maxPistolAmmo;
+        if (currentRifleAmmo > maxRifleAmmo)
+            currentRifleAmmo = (int)maxRifleAmmo;
+        if (currentLaserAmmo > maxLaserAmmo)
+            currentLaserAmmo = (int)maxLaserAmmo;
+        if (currentPhysicsAmmo > maxPhysicsAmmo)
+            currentPhysicsAmmo = (int)maxPhysicsAmmo;
+
+        if (currentPistolAmmo < 0)
+            currentPistolAmmo = 0;
+        if (currentRifleAmmo < 0)
+            currentRifleAmmo = 0;
+        if (currentLaserAmmo < 0)
+            currentLaserAmmo = 0;
+        if (currentPhysicsAmmo < 0)
+            currentPhysicsAmmo = 0;
+
+        // weapon shoot
+        if (Input.GetMouseButton(0) && currentWeapon != null)
         {
-            currentWeapon.ShootRaycast();
+            if (currentWeapon.loadedAmmo > 0)
+                currentWeapon.Shoot();
+            else
+            {
+                if (currentWeapon.type.ToUpper().Equals("PISTOL"))
+                {
+                    if (currentPistolAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                    {
+                        currentPistolAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                    }
+                    else
+                    {
+                        currentWeapon.loadedAmmo = currentPistolAmmo;
+                        currentPistolAmmo = 0;
+                    }
+                }
+                else if (currentWeapon.type.ToUpper().Equals("RIFLE"))
+                {
+                    if (currentRifleAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                    {
+                        currentRifleAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                    }
+                    else
+                    {
+                        currentWeapon.loadedAmmo = currentRifleAmmo;
+                        currentRifleAmmo = 0;
+                    }
+                }
+            }
+        }
+
+        // new gravity
+        if (!jetpackInUse || jetpackFuel <= 0)
+            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 987) * Time.deltaTime);
+
+        // match weapon to item
+        if (itemToPickup != null && itemToPickup.type.ToUpper().Equals("WEAPON"))
+        {
+            weaponToPickup = (Weapon)itemToPickup;
+        }
+        else if (itemToPickup == null)
+        {
+            weaponToPickup = null;
+        }
+
+        // switches the hands to the correct layout
+        if (currentWeapon.isTwoHanded)
+        {
+            rightArmOnly.SetActive(false);
+            bothArms.SetActive(true);
+        }
+        else if (!currentWeapon.isTwoHanded)
+        {
+            bothArms.SetActive(false);
+            rightArmOnly.SetActive(true);
         }
     }
 
@@ -235,6 +324,10 @@ public class PlayerController : MonoBehaviour
             else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady)
             {
                 StartCoroutine(HandleJetpack());
+            }
+            else if (!Input.GetKey(KeyCode.Space))
+            {
+                jetpackInUse = false;
             }
 
             // need to set transform rotation BEFORE camera rotation (prevents camera jitter)
@@ -379,6 +472,7 @@ public class PlayerController : MonoBehaviour
         {
             jumpReady = true;
             doubleJumpReady = true;
+            jetpackInUse = false;
         }
     }
 
@@ -413,15 +507,40 @@ public class PlayerController : MonoBehaviour
                 {
                     DontDestroyOnLoad(itemToPickup);
                 }
-                playerWeapons.Add((Weapon)itemToPickup);
+                playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
                 itemToPickup.gameObject.SetActive(false);
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
+                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 itemToPickup = null;
             }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("BASIC HEALTH PACK"))
             {
                 currentHp += 20;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE HEALTH PACK"))
+            {
+                currentHp += 100;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("JET REFUEL"))
+            {
+                jetpackFuel = (int)maxJetpackFuel;
+                itemToPickup.gameObject.SetActive(false);
+                if (itemToPickup.pickupText != null)
+                    itemToPickup.pickupText.gameObject.SetActive(false);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("PISTOL AMMO PICKUP"))
+            {
+                currentLaserAmmo += 10;
                 itemToPickup.gameObject.SetActive(false);
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
@@ -445,8 +564,19 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // toggle flashlight
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            if (flashlightEnabled)
+                flashlight.SetActive(false);
+            else if (!flashlightEnabled)
+                flashlight.SetActive(true);
+
+            flashlightEnabled = !flashlightEnabled;
+        }
+
         // Slow down time (editor only)
-        if (UnityEditor.EditorApplication.isPlaying) // this will prevent the project from building, remove the slow-time code before building. this feature should not be in a build
+        if (true) // this will prevent the project from building, remove the slow-time code before building. this feature should not be in a build
         {
             if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.Plus))
             {
@@ -501,6 +631,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
+            currentWeapon.readyToShoot = true;
             // cycle weapon up
             if (currentWeaponIndex < playerWeapons.Count - 1) // only executes if we are not at the last index
             {
@@ -526,6 +657,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
+            currentWeapon.readyToShoot = true;
             // cycle weapon down
             if (currentWeaponIndex > 0) // only executes if we are not at the first index
             {
@@ -571,9 +703,9 @@ public class PlayerController : MonoBehaviour
     {
         if (jetpackFuel > 0 && enableJetpack && unlockJetpack)
         {
-            canRegenFuel = false;
+            jetpackInUse = true;
 
-            _rb.velocity = (_rb.velocity * 0.965f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
+            _rb.velocity = (_rb.velocity * 0.97f); // reduces velocity as the jetpack is used, provides a "cushion" when used while falling
 
             _rb.AddForce(Vector2.up * 0.095f, ForceMode.Impulse); // increases takeoff speed, and allows momentum change when falling
 
@@ -589,7 +721,7 @@ public class PlayerController : MonoBehaviour
     {
         while (true)
         {
-            if (jetpackFuel < maxJetpackFuel && canRegenFuel)
+            if (jetpackFuel < maxJetpackFuel && !jetpackInUse && canRegenFuel)
             {
                 jetpackFuel += fuelRegenAmount;
             }
