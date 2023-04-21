@@ -12,6 +12,12 @@ public class LaserSwitch : MonoBehaviour
     public bool activated = false;
     public bool withinBounds = false;
     public LaserGun laserGun;
+    private AudioSource _activateSound;
+
+    private void Awake()
+    {
+        _activateSound = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -41,9 +47,10 @@ public class LaserSwitch : MonoBehaviour
 
     public void ActivateSwitch()
     {
-        laserGun.called = true;
+        // laserGun.called = true; // need to test in the laserGun script to make sure each switch is activated
         activated = true;
         activateText.text = "Activated";
         meshRenderer.material.color = color2;
+        _activateSound.Play();
     }
 }

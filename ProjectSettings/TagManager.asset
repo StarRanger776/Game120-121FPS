@@ -7,6 +7,7 @@ TagManager:
   - Enemy
   - PowerUp
   - IgnoreBulletCollisions
+  - FirstPerson
   layers:
   - Default
   - TransparentFX

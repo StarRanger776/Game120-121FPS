@@ -6,15 +6,39 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/DevLevel.unity
-    guid: 9c7e094d346fbb74f83fb809d662cb9d
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
+    path: Assets/Scenes/AltMenuMain.unity
+    guid: c3bdf4c1abd3ac94eb5fecf20462af68
+  - enabled: 0
     path: Assets/Scenes/MainMenu.unity
     guid: e33d647ddf282ca48b150f3d5bac6110
   - enabled: 1
     path: Assets/Scenes/LoadFirstAfterMainMenu.unity
     guid: 166ac1f226e88124c9eff5ec33b7506f
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/LevelOneLayout.unity
     guid: 8d35243f353217440af9443ced6c7b48
+  - enabled: 1
+    path: Assets/Scenes/LevelOne.unity
+    guid: 0566009a1ce970e4fbea1ae938fafeb0
+  - enabled: 1
+    path: Assets/Scenes/ShopMenu1.unity
+    guid: 01e6a86ea05320f4182873068cda2ad1
+  - enabled: 0
+    path: Assets/Scenes/LevelTwoLayout.unity
+    guid: e13381b445bafb645b90a5bc553b90da
+  - enabled: 1
+    path: Assets/Scenes/LevelTwo.unity
+    guid: 975f6631932c0d548874aad3cbe86f14
+  - enabled: 1
+    path: Assets/Scenes/ShopMenu2.unity
+    guid: 1fc5e08b772ff514194b783666e84a22
+  - enabled: 0
+    path: Assets/Scenes/LevelThreeLayout.unity
+    guid: f4f3d31a6ad8ac347b35633f68529da6
+  - enabled: 1
+    path: Assets/Scenes/LevelThree.unity
+    guid: d48cbefeafa56414090ca9489b3d3183
   m_configObjects: {}

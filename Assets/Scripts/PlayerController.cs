@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))] // using rigidbody for movement
+[RequireComponent(typeof(CapsuleCollider))] // using capsule collider for crouching and hitbox
 public class PlayerController : MonoBehaviour
 {
     [Header("Mouse Controls")]
@@ -18,7 +19,6 @@ public class PlayerController : MonoBehaviour
     public Slider healthSlider;
     public Slider jetpackFuelSlider;
     public GameObject flashlight;
-    private Light _flashlightLight;
     public GameObject rightArmOnly;
     public GameObject bothArms;
 
@@ -33,10 +33,10 @@ public class PlayerController : MonoBehaviour
     public int jetpackFuel;
     public uint maxJetpackFuel = 100;
     public int fuelRegenAmount = 2;
-    public float playerHeight = 2;
+    private float playerHeight = 2;
     private bool jumpReady;
     private bool doubleJumpReady;
-    private bool enablePlayerMovementControls, enablePlayerCameraControls; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
+    private bool enablePlayerMovementControls, enablePlayerCameraControls, enablePlayerGravity; // lets us disable camera/movement controls which can be useful for certain animations or cutscenes
     public bool canRegenHp = false; // regen Hp over time
     public bool canRegenFuel = true; // global fuel regen, never gets automatically enabled or disabled
     private float defaultFov;
@@ -52,8 +52,8 @@ public class PlayerController : MonoBehaviour
     [HideInInspector]
     public Vector2 rotation;
     private bool flashlightEnabled = false;
+    public float dashSpeed = 10f;
     public float gravityMultiplier = 1.0f;
-    private bool jetpackInUse = false;
 
     [Header("Player Skills")]
     public bool unlockDoubleJump;
@@ -68,11 +68,9 @@ public class PlayerController : MonoBehaviour
     public int currentPistolAmmo;
     public int currentRifleAmmo;
     public int currentLaserAmmo;
-    public int currentPhysicsAmmo;
     public uint maxPistolAmmo = 50;
     public uint maxRifleAmmo = 60;
     public uint maxLaserAmmo = 50;
-    public uint maxPhysicsAmmo = 10;
 
     [HideInInspector]
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
@@ -85,9 +83,20 @@ public class PlayerController : MonoBehaviour
     private bool canZoom;
     public float timeToZoom = 0.1f; // how long does it take to zoom in/out
     public float zoomedFov = 40f; // fov when zoomed all the way in
+    public float timeToCrouch = 0.1f;
     private Coroutine zoomRoutine;
-    public bool enableJetpack = true; // the player may not want to always have the jetpack enabled
+    private Coroutine crouchRoutine;
+    private Coroutine dashRoutine;
+    private Coroutine refuelRoutine;
+    private Coroutine regenRoutine;
+    private bool enableJetpack = true; // the player may not want to always have the jetpack enabled
+    private bool jetpackInUse = false;
     private bool isJumping = false;
+    // private bool isCrouching = false;
+    private bool isReloading = false;
+    public bool readyToDash = true;
+    public bool isRegeningHp = false;
+    public bool isRegeningFuel = false;
 
     private void Start()
     {
@@ -96,21 +105,14 @@ public class PlayerController : MonoBehaviour
         _player = this.gameObject;
         _rb = GetComponent<Rigidbody>();
         orientation = this.transform;
-        _flashlightLight = flashlight.GetComponent<Light>();
 
-        // lock cursor to game window center and make it invisible
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        defaultFov = _mainCamera.fieldOfView;
 
         // default settings for mouse sensitivity
         if (mouseSensitivity.x == 0)
             mouseSensitivity.x = 100;
         if (mouseSensitivity.y == 0)
             mouseSensitivity.y = 100;
-
-        // set gameLogic references
-        enablePlayerMovementControls = gameLogic.enablePlayerMovementControls;
-        enablePlayerCameraControls = gameLogic.enablePlayerCameraControls;
 
         jumpReady = true;
         doubleJumpReady = true;
@@ -127,11 +129,6 @@ public class PlayerController : MonoBehaviour
 
         if (currentWeapon == null) // need to always have a weapon in the weapon list.
             currentWeapon = playerWeapons[0];
-
-        StartCoroutine(HealthRegen());
-        StartCoroutine(FuelRegen());
-
-        defaultFov = _mainCamera.fieldOfView;
 
         canZoom = true;
 
@@ -165,6 +162,12 @@ public class PlayerController : MonoBehaviour
             HandleActions();
             HandleInventory();
             HandleCamera();
+
+            // dash
+            if (unlockJetpackDash && Input.GetKeyDown(KeyCode.X))
+            {
+                StartCoroutine(HandleDash());
+            }
 
             firstPersonCamera.fieldOfView = _mainCamera.fieldOfView;
         }
@@ -231,8 +234,6 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = (int)maxRifleAmmo;
         if (currentLaserAmmo > maxLaserAmmo)
             currentLaserAmmo = (int)maxLaserAmmo;
-        if (currentPhysicsAmmo > maxPhysicsAmmo)
-            currentPhysicsAmmo = (int)maxPhysicsAmmo;
 
         if (currentPistolAmmo < 0)
             currentPistolAmmo = 0;
@@ -240,48 +241,13 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = 0;
         if (currentLaserAmmo < 0)
             currentLaserAmmo = 0;
-        if (currentPhysicsAmmo < 0)
-            currentPhysicsAmmo = 0;
-
-        // weapon shoot
-        if (Input.GetMouseButton(0) && currentWeapon != null)
-        {
-            if (currentWeapon.loadedAmmo > 0)
-                currentWeapon.Shoot();
-            else
-            {
-                if (currentWeapon.type.ToUpper().Equals("PISTOL"))
-                {
-                    if (currentPistolAmmo > (int)currentWeapon.maxAmmoBeforeReload)
-                    {
-                        currentPistolAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
-                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
-                    }
-                    else
-                    {
-                        currentWeapon.loadedAmmo = currentPistolAmmo;
-                        currentPistolAmmo = 0;
-                    }
-                }
-                else if (currentWeapon.type.ToUpper().Equals("RIFLE"))
-                {
-                    if (currentRifleAmmo > (int)currentWeapon.maxAmmoBeforeReload)
-                    {
-                        currentRifleAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
-                        currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
-                    }
-                    else
-                    {
-                        currentWeapon.loadedAmmo = currentRifleAmmo;
-                        currentRifleAmmo = 0;
-                    }
-                }
-            }
-        }
 
         // new gravity
-        if (!jetpackInUse || jetpackFuel <= 0)
-            _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 987) * Time.deltaTime);
+        if (enablePlayerGravity)
+        {
+            if (!jetpackInUse || jetpackFuel <= 0)
+                _rb.AddForce(new Vector3(0, -1.0f, 0) * _rb.mass * (gravityMultiplier * 987) * Time.deltaTime);
+        }
 
         // match weapon to item
         if (itemToPickup != null && itemToPickup.type.ToUpper().Equals("WEAPON"))
@@ -317,11 +283,11 @@ public class PlayerController : MonoBehaviour
             HandleMovement();
 
             // jetpack
-            if (Input.GetKey(KeyCode.Space) && !isGrounded && !unlockDoubleJump)
+            if (Input.GetKey(KeyCode.Space) && !isGrounded && !unlockDoubleJump && enablePlayerMovementControls)
             {
                 StartCoroutine(HandleJetpack());
             }
-            else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady)
+            else if (Input.GetKey(KeyCode.Space) && !isGrounded && !doubleJumpReady && enablePlayerMovementControls)
             {
                 StartCoroutine(HandleJetpack());
             }
@@ -332,14 +298,33 @@ public class PlayerController : MonoBehaviour
 
             // need to set transform rotation BEFORE camera rotation (prevents camera jitter)
             transform.rotation = Quaternion.Euler(0, rotation.y, 0);
+
+            // fuel regen
+            if (canRegenFuel)
+            {
+                if (!isRegeningFuel)
+                {
+                    StartCoroutine(FuelRegen());
+                }
+            }
+
+            // health regen
+            if (canRegenHp)
+            {
+                if (!isRegeningHp)
+                {
+                    StartCoroutine(HealthRegen());
+                }
+            }
         }
     }
 
     private void LateUpdate()
     {
-        // ensure the two booleans match
+        // ensure the booleans match
         enablePlayerMovementControls = gameLogic.enablePlayerMovementControls;
         enablePlayerCameraControls = gameLogic.enablePlayerCameraControls;
+        enablePlayerGravity = gameLogic.enablePlayerGravity;
 
         // need to set camera rotation in late update (prevents camera jitter)
         _mainCamera.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
@@ -456,7 +441,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // jump
-        if (jumpReady && isGrounded && enablePlayerMovementControls && isJumping)
+        if (jumpReady && isGrounded && enablePlayerMovementControls && isJumping && enablePlayerMovementControls)
         {
             _rb.velocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
             _rb.AddForce(Vector2.up * jumpPower, ForceMode.Impulse);
@@ -494,24 +479,23 @@ public class PlayerController : MonoBehaviour
     private void HandleActions()
     {
         // Interact
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && enablePlayerMovementControls)
         {
             // pickup item
             if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("WEAPON"))
             {
+                playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 if (itemToPickup.transform.parent != null)
                 {
-                    DontDestroyOnLoad(itemToPickup.transform.parent);
+                    Destroy(itemToPickup.transform.parent.gameObject);
                 }
                 else
                 {
-                    DontDestroyOnLoad(itemToPickup);
+                    Destroy(itemToPickup.gameObject);
                 }
-                playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
-                itemToPickup.gameObject.SetActive(false);
-                if (itemToPickup.pickupText != null)
-                    itemToPickup.pickupText.gameObject.SetActive(false);
-                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 itemToPickup = null;
             }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("BASIC HEALTH PACK"))
@@ -538,12 +522,68 @@ public class PlayerController : MonoBehaviour
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
             }
-            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("PISTOL AMMO PICKUP"))
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("SMALL PISTOL AMMO PICKUP"))
             {
-                currentLaserAmmo += 10;
-                itemToPickup.gameObject.SetActive(false);
+                currentPistolAmmo += 4;
+                Destroy(itemToPickup.gameObject);
                 if (itemToPickup.pickupText != null)
-                    itemToPickup.pickupText.gameObject.SetActive(false);
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("MEDIUM PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 8;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 12;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("HUGE PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 18;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("SMALL RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 12;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("MEDIUM RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 18;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 24;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("HUGE RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 32;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
                 itemToPickup = null;
             }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp) // create other pickups ABOVE this pickup. this should be last ALWAYS
@@ -620,6 +660,47 @@ public class PlayerController : MonoBehaviour
         {
             enableJetpack = !enableJetpack;
         }
+
+        // crouching
+        if (Input.GetKeyDown(KeyCode.LeftControl) && enablePlayerMovementControls)
+        {
+            if (crouchRoutine != null)
+            {
+                StopCoroutine(crouchRoutine);
+                crouchRoutine = null;
+            }
+
+            crouchRoutine = StartCoroutine(HandleCrouch(true));
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            if (crouchRoutine != null)
+            {
+                StopCoroutine(crouchRoutine);
+                crouchRoutine = null;
+            }
+
+            crouchRoutine = StartCoroutine(HandleCrouch(false));
+        }
+
+        // weapon shoot
+        if (Input.GetMouseButton(0) && currentWeapon != null && enablePlayerMovementControls)
+        {
+            if (currentWeapon.loadedAmmo > 0)
+                currentWeapon.Shoot();
+            else
+            {
+                if (!isReloading)
+                    StartCoroutine(Reload(currentWeapon.type));
+            }
+        }
+
+        // reload
+        if (Input.GetKeyDown(KeyCode.R) && enablePlayerMovementControls)
+        {
+            if (!isReloading)
+                StartCoroutine(Reload(currentWeapon.type));
+        }
     }
 
     /* HandleInventory should control what weapons
@@ -629,54 +710,38 @@ public class PlayerController : MonoBehaviour
      * HandleInventory should also control things like keys in the inventory.*/
     private void HandleInventory()
     {
-        if (Input.GetAxis("Mouse ScrollWheel") > 0)
+        if (Input.GetAxis("Mouse ScrollWheel") > 0 && enablePlayerMovementControls)
         {
             currentWeapon.readyToShoot = true;
             // cycle weapon up
             if (currentWeaponIndex < playerWeapons.Count - 1) // only executes if we are not at the last index
             {
-                // play unequip animation
-                // disable currentWeapon gameObject
                 currentWeaponIndex += 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
-                // enable currentWeapon gameObject
-                // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our first weapon (we don't need this if we don't want to let the player scroll all the way through the list endlessly)
             {
-                // play unequip animation
-                // disable currentWeapon gameObject
                 currentWeaponIndex = 0;
                 currentWeapon = playerWeapons[currentWeaponIndex];
-                // enable currentWeapon gameObject
-                // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
 
         }
-        else if (Input.GetAxis("Mouse ScrollWheel") < 0)
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0 && enablePlayerMovementControls)
         {
             currentWeapon.readyToShoot = true;
             // cycle weapon down
             if (currentWeaponIndex > 0) // only executes if we are not at the first index
             {
-                // play unequip animation
-                // disable currentWeapon gameObject
                 currentWeapon = playerWeapons[currentWeaponIndex - 1];
                 currentWeaponIndex -= 1;
-                // enable currentWeapon gameObject
-                // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our last weapon (same as above)
             {
-                // play unequip animation
-                // disable currentWeapon gameObject
                 currentWeaponIndex = playerWeapons.Count - 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
-                // enable currentWeapon gameObject
-                // play equip animation
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
         }
@@ -685,6 +750,75 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHp -= damage;
+    }
+
+    public IEnumerator Reload(string weaponType)
+    {
+        isReloading = true;
+        Weapon weaponToReload = currentWeapon;
+
+        if (weaponType.ToUpper().Equals("PISTOL"))
+        {
+            currentPistolAmmo += currentWeapon.loadedAmmo;
+            currentWeapon.loadedAmmo = 0;
+        }
+        else if (weaponType.ToUpper().Equals("RIFLE"))
+        {
+            currentRifleAmmo += currentWeapon.loadedAmmo;
+            currentWeapon.loadedAmmo = 0;
+        }
+
+        yield return new WaitForSeconds(currentWeapon.reloadTime);
+
+        if (weaponToReload == currentWeapon)
+        {
+            if (weaponType.ToUpper().Equals("PISTOL"))
+            {
+                if (currentPistolAmmo + currentWeapon.loadedAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentPistolAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = currentPistolAmmo;
+                    currentPistolAmmo = 0;
+                }
+            }
+            else if (weaponType.ToUpper().Equals("RIFLE"))
+            {
+                if (currentRifleAmmo + currentWeapon.loadedAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentRifleAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = currentRifleAmmo;
+                    currentRifleAmmo = 0;
+                }
+            }
+            else if (weaponType.ToUpper().Equals("LASER"))
+            {
+                if (currentLaserAmmo + currentWeapon.loadedAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentLaserAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = currentLaserAmmo;
+                    currentLaserAmmo = 0;
+                }
+            }
+        }
+        else
+        {
+            isReloading = false;
+            yield return null;
+        }
+
+        isReloading = false;
     }
 
     private IEnumerator DoubleJump()
@@ -719,23 +853,29 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator FuelRegen()
     {
-        while (true)
+        while (canRegenFuel)
         {
+            isRegeningFuel = true;
+
             if (jetpackFuel < maxJetpackFuel && !jetpackInUse && canRegenFuel)
             {
                 jetpackFuel += fuelRegenAmount;
             }
             yield return new WaitForSeconds(0.05f);
+            isRegeningFuel = false;
         }
     }
 
     private IEnumerator HealthRegen()
     {
-        while (true)
+        while (canRegenHp)
         {
+            isRegeningHp = true;
+
             if (currentHp < (int)maxHp && canRegenHp)
                 currentHp += 1;
             yield return new WaitForSeconds(0.5f);
+            isRegeningHp = false;
         }
     }
 
@@ -754,6 +894,49 @@ public class PlayerController : MonoBehaviour
 
         _mainCamera.fieldOfView = desiredFov;
         zoomRoutine = null;
+    }
+
+    private IEnumerator HandleCrouch(bool enterCrouch)
+    {
+        float desiredHeight = enterCrouch ? playerHeight / 2 : playerHeight;
+        float startingHeight = playerHeight;
+        float timeElapsed = 0;
+
+        while (timeElapsed < timeToCrouch)
+        {
+            _player.GetComponent<CapsuleCollider>().height = Mathf.Lerp(startingHeight, desiredHeight, (timeElapsed / timeToCrouch));
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        _player.GetComponent<CapsuleCollider>().height = desiredHeight;
+        crouchRoutine = null;
+    }
+
+    private IEnumerator HandleDash()
+    {
+        if (readyToDash)
+        {
+            _rb.AddForce(moveDirection.normalized * dashSpeed * 10, ForceMode.Impulse);
+            readyToDash = false;
+
+            if (dashRoutine != null)
+            {
+                StopCoroutine(dashRoutine);
+                dashRoutine = null;
+            }
+
+            StartCoroutine(ResetDash(true));
+        }
+
+        yield return null;
+    }
+
+    private IEnumerator ResetDash(bool resetDash)
+    {
+        yield return new WaitForSeconds(0.75f);
+
+        readyToDash = resetDash;
     }
 
     private IEnumerator PlayerDeath()
