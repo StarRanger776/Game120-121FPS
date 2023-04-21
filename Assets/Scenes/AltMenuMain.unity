@@ -9346,7 +9346,6 @@ MonoBehaviour:
   maxLaserAmmo: 50
   itemToPickup: {fileID: 0}
   weaponToPickup: {fileID: 0}
-  switchToActivate: {fileID: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
@@ -9847,9 +9846,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59ace02816dae784c8332f70b971d20c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enablePlayerMovementControls: 0
+  enablePlayerMovementControls: 1
   enablePlayerCameraControls: 0
-  enablePlayerGravity: 0
+  enablePlayerGravity: 1
   timeScale: 1
 --- !u!4 &1784807467
 Transform:

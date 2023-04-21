@@ -76,8 +76,6 @@ public class PlayerController : MonoBehaviour
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
     [HideInInspector]
     public Weapon weaponToPickup;
-    [HideInInspector]
-    public SwitchLogic switchToActivate;
 
     [Header("Misc")]
     public LayerMask groundLayer;
@@ -603,12 +601,6 @@ public class PlayerController : MonoBehaviour
                 if (itemToPickup.pickupText != null)
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
-            }
-
-            // use switch
-            if (switchToActivate != null)
-            {
-                switchToActivate.isActivated = true;
             }
         }
 
