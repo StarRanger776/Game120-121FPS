@@ -20,12 +20,13 @@ public class Shop : MonoBehaviour
         player.gameLogic.enablePlayerGravity = false;
         player.gameLogic.enablePlayerMovementControls = false;
 
-        Cursor.lockState = CursorLockMode.Confined;
-        Cursor.visible = true;
+        StartCoroutine(WaitForTheThings());
     }
 
-    private void Start()
+    private IEnumerator WaitForTheThings() // necessary so as to not disable the gameObjects before other scripts have a chance to access them
     {
+        yield return new WaitForEndOfFrame();
+
         player.gameObject.SetActive(false);
         _mainCamera.gameObject.SetActive(false);
         _fpCam.SetActive(false);

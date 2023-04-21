@@ -707,8 +707,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfac6d6208c07c749ae23d0102f5b2f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: LevelTwoLayout
-  spawnPosition: {x: -18, y: -28, z: 36.5}
+  sceneToLoad: LevelTwo
+  spawnPosition: {x: -15.5, y: -28, z: 35}
 --- !u!114 &1895148322
 MonoBehaviour:
   m_ObjectHideFlags: 0

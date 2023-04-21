@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fa8b5a82cd3ecf49a44c47e802a10de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: LevelOneLayout
+  sceneToLoad: LevelOne
   spawnPoint: {x: 0, y: 0, z: 0}
 --- !u!4 &1678949741
 Transform:

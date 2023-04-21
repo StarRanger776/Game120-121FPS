@@ -543,8 +543,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfac6d6208c07c749ae23d0102f5b2f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: LevelThreeLayout
-  spawnPosition: {x: -30, y: 72, z: -6}
+  sceneToLoad: LevelThree
+  spawnPosition: {x: 0, y: 80.25, z: -15}
 --- !u!4 &1623890788
 Transform:
   m_ObjectHideFlags: 0

@@ -32,6 +32,9 @@ public class ShopButtons : MonoBehaviour
         _mainCamera.gameObject.SetActive(true);
         player.gameObject.SetActive(true);
 
+        player.rotation.x = 0;
+        player.rotation.y = 0;
+
         SceneManager.LoadScene(sceneToLoad);
     }
 }

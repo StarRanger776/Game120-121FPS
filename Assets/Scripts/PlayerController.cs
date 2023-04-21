@@ -100,7 +100,7 @@ public class PlayerController : MonoBehaviour
     public bool isRegeningHp = false;
     public bool isRegeningFuel = false;
 
-    private void Awake()
+    private void Start()
     {
         // object references initialized before anything else
         _mainCamera = Camera.main;
@@ -140,17 +140,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (enablePlayerCameraControls)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else if (!enablePlayerCameraControls)
-        {
-            Cursor.lockState = CursorLockMode.Confined;
-            Cursor.visible = true;
-        }
-
         Time.timeScale = gameLogic.timeScale;
         if (currentHp <= 0)
         {
@@ -535,12 +524,68 @@ public class PlayerController : MonoBehaviour
                     itemToPickup.pickupText.gameObject.SetActive(false);
                 itemToPickup = null;
             }
-            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("PISTOL AMMO PICKUP"))
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("SMALL PISTOL AMMO PICKUP"))
             {
-                currentLaserAmmo += 10;
-                itemToPickup.gameObject.SetActive(false);
+                currentPistolAmmo += 4;
+                Destroy(itemToPickup.gameObject);
                 if (itemToPickup.pickupText != null)
-                    itemToPickup.pickupText.gameObject.SetActive(false);
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("MEDIUM PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 8;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 12;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("HUGE PISTOL AMMO PICKUP"))
+            {
+                currentPistolAmmo += 18;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("SMALL RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 12;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("MEDIUM RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 18;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("LARGE RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 24;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
+                itemToPickup = null;
+            }
+            else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp && itemToPickup.type.ToUpper().Equals("HUGE RIFLE AMMO PICKUP"))
+            {
+                currentRifleAmmo += 32;
+                Destroy(itemToPickup.gameObject);
+                if (itemToPickup.pickupText != null)
+                    Destroy(itemToPickup.pickupText.gameObject);
                 itemToPickup = null;
             }
             else if (itemToPickup != null && itemToPickup.canBePickedUp && itemToPickup.readyToBePickedUp) // create other pickups ABOVE this pickup. this should be last ALWAYS
