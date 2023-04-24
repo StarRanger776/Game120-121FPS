@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))] // using rigidbody for movement
@@ -71,6 +72,8 @@ public class PlayerController : MonoBehaviour
     public uint maxPistolAmmo = 50;
     public uint maxRifleAmmo = 60;
     public uint maxLaserAmmo = 50;
+    public int currentMoney = 0;
+    public int moneyEarned = 0;
 
     [HideInInspector]
     public ItemBase itemToPickup; // needs to be public but doesn't need to show in inspector
@@ -93,7 +96,8 @@ public class PlayerController : MonoBehaviour
     private bool jetpackInUse = false;
     private bool isJumping = false;
     // private bool isCrouching = false;
-    private bool isReloading = false;
+    [HideInInspector]
+    public bool isReloading = false;
     public bool readyToDash = true;
     public bool isRegeningHp = false;
     public bool isRegeningFuel = false;
@@ -941,11 +945,17 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator PlayerDeath()
     {
+        SceneManager.LoadScene("DeathScreen");
         Time.timeScale = 0; // pauses the game, can instead pause the editor but that won't work for an actual BUILD of a unity game
         gameLogic.enablePlayerCameraControls = false;
         gameLogic.enablePlayerMovementControls = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        Destroy(_mainCamera.gameObject);
+        Destroy(this.gameObject);
+        Destroy(FindObjectOfType<PlayerUI>().gameObject);
+        Destroy(FindObjectOfType<FirstPerson>().gameObject);
+        Destroy(gameLogic.gameObject);
         yield return null;
     }
 }

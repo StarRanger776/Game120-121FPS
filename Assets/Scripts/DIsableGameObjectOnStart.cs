@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DIsableGameObjectOnStart : MonoBehaviour
+public class DisableGameObjectOnStart : MonoBehaviour
 {
     private void LateUpdate()
     {
