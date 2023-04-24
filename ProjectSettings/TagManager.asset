@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Enemy
+  - PowerUp
+  - IgnoreBulletCollisions
+  - FirstPerson
   layers:
   - Default
   - TransparentFX
@@ -17,7 +20,7 @@ TagManager:
   - First Person
   - Ground
   - ShootRaycastIgnore
-  - 
+  - IgnoreBulletCollisions
   - 
   - 
   - 
