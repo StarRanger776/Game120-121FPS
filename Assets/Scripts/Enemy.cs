@@ -8,11 +8,15 @@ public class Enemy : MonoBehaviour
     public int currentHp;
     public uint maxHp;
     public Slider healthSlider;
+    private PlayerController player;
+    public int moneyOnKill;
 
-    private void Start()
+    private void Awake()
     {
         if (currentHp <= 0)
             currentHp = (int)maxHp;
+
+        player = FindObjectOfType<PlayerController>();
     }
 
     private void Update()
@@ -41,5 +45,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHp -= damage;
+        player.currentMoney += moneyOnKill;
+        player.moneyEarned += moneyOnKill;
     }
 }
