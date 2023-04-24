@@ -31,6 +31,7 @@ public class Weapon : ItemBase
     private Transform _shootPoint;
     private AudioSource _shootSound;
     private PlayerController _player;
+    public Transform attackPoint;
 
     private void Start()
     {
@@ -104,11 +105,36 @@ public class Weapon : ItemBase
         readyToShoot = true;
     }
 
-    private void ShootBullet()
+    private IEnumerator ShootBullet()
     {
-        if (loadedAmmo > 0)
+        if (loadedAmmo > 0 && readyToShoot)
         {
-            //GameObject currentBullet = Instantiate(bullet, shootPoint.position, shootPoint.rotation);
+            readyToShoot = false;
+            loadedAmmo -= 1;
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+            RaycastHit hit;
+            Vector3 targetPoint;
+            if (Physics.Raycast(ray, out hit))
+                targetPoint = hit.point;
+            else
+                targetPoint = ray.GetPoint(75);
+            Vector3 directionWithoutSpread = targetPoint - attackPoint.position;
+            GameObject currentBullet = Instantiate(bullet, attackPoint.position, Quaternion.identity);
+            currentBullet.transform.forward = directionWithoutSpread.normalized;
+            Vector3 pos = Camera.main.transform.TransformPoint(Vector3.forward * 1);
+
+            Rigidbody bulletRB = currentBullet.AddComponent(typeof(Rigidbody)) as Rigidbody;
+            SphereCollider sc = currentBullet.AddComponent(typeof(SphereCollider)) as SphereCollider;
+            BulletLogicScript BLScript = currentBullet.AddComponent<BulletLogicScript>();
+            BLScript.damage = damage;
+            sc.radius += 1f;
+            sc.isTrigger = true;
+            bulletRB.AddForce(directionWithoutSpread.normalized * 25, ForceMode.Impulse);
+
+
+            //bulletRB.AddForce(Camera.main.transform.up * 1, ForceMode.Impulse); add camera recoil/shake?
         }
+        yield return new WaitForSeconds(attackDelay);
+        readyToShoot = true;
     }
 }

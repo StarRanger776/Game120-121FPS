@@ -72,6 +72,7 @@ public class PlayerController : MonoBehaviour
     public uint maxPistolAmmo = 50;
     public uint maxRifleAmmo = 60;
     public uint maxLaserAmmo = 50;
+    public uint currentPhysicsAmmo = 4;
     public int currentMoney = 0;
     public int moneyEarned = 0;
 
@@ -815,6 +816,20 @@ public class PlayerController : MonoBehaviour
                     currentLaserAmmo = 0;
                 }
             }
+            else if (currentWeapon.type.ToUpper().Equals("PLASMA"))
+            {
+                if (currentPhysicsAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentPhysicsAmmo -= (uint)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = (int)currentPhysicsAmmo;
+                    currentPhysicsAmmo = 0;
+                }
+            }
+
         }
         else
         {

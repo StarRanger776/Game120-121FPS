@@ -4,15 +4,6 @@ using UnityEngine;
 
 public class BulletLogicScript : MonoBehaviour
 {
-<<<<<<< Updated upstream
-    public int damage;
-
-     private void OnTriggerEnter(Collider other)
-    {
-        if(other.tag == "Enemy")
-            other.GetComponent<Enemy>().TakeDamage(damage);
-            Destroy(this);
-=======
   public int damage;
   public float lifeSpan = 3;
 
@@ -32,6 +23,5 @@ public class BulletLogicScript : MonoBehaviour
             print(this.gameObject);
             Destroy(this.gameObject);
         }
->>>>>>> Stashed changes
     }
 }
