@@ -720,14 +720,18 @@ public class PlayerController : MonoBehaviour
             // cycle weapon up
             if (currentWeaponIndex < playerWeapons.Count - 1) // only executes if we are not at the last index
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex += 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our first weapon (we don't need this if we don't want to let the player scroll all the way through the list endlessly)
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = 0;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
 
@@ -738,14 +742,18 @@ public class PlayerController : MonoBehaviour
             // cycle weapon down
             if (currentWeaponIndex > 0) // only executes if we are not at the first index
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeapon = playerWeapons[currentWeaponIndex - 1];
                 currentWeaponIndex -= 1;
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our last weapon (same as above)
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = playerWeapons.Count - 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
         }
