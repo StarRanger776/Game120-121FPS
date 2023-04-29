@@ -14,6 +14,7 @@ public class Weapon : ItemBase
     public bool isRanged;
     public bool isTwoHanded;
     public bool isRaycast;
+    public bool isChargable;
     public int loadedAmmo; // ammo in "clip"
     public uint maxAmmoBeforeReload; // max ammo in "clip"
     public bool readyToShoot = true;
@@ -30,8 +31,13 @@ public class Weapon : ItemBase
     public GameObject bullet;
     private Transform _shootPoint;
     private AudioSource _shootSound;
+    private AudioSource _shootChargedSound;
+    private AudioSource _shootUnchargedSound;
+
+    private AudioSource _shootWhiffSound;
     private PlayerController _player;
     public Transform attackPoint;
+    private Coroutine chargeShot;
 
     private void Start()
     {
@@ -42,6 +48,12 @@ public class Weapon : ItemBase
 
         _shootSound = GetComponent<AudioSource>();
 
+        AudioSource[] shootSounds;
+
+        shootSounds = GetComponents<AudioSource>();
+        _shootChargedSound = shootSounds[3];
+        _shootUnchargedSound = shootSounds[2];
+        _shootWhiffSound = shootSounds[1];       
         _player = FindObjectOfType<PlayerController>();
     }
 
@@ -49,14 +61,21 @@ public class Weapon : ItemBase
     {
         if (isRanged)
         {
-            if (isRaycast && readyToShoot)
+            if (readyToShoot && isRaycast && !isChargable)
             {
                 StartCoroutine(ShootRaycast());
             }
-            else
+            else if(readyToShoot && !isRaycast && isChargable)
             {
-                ShootBullet();
+                if(chargeShot == null)
+                {
+                    chargeShot = StartCoroutine(ShootChargedBullet());
+                }
             }
+            else if(readyToShoot && !isRaycast && !isChargable)
+            {
+                StartCoroutine(ShootBullet());
+            }   
         }
         else
         {
@@ -107,6 +126,9 @@ public class Weapon : ItemBase
 
     private IEnumerator ShootBullet()
     {
+        if (_shootSound != null)
+                _shootSound.Play();
+        print("whoops");
         if (loadedAmmo > 0 && readyToShoot)
         {
             readyToShoot = false;
@@ -130,11 +152,87 @@ public class Weapon : ItemBase
             sc.radius += 1f;
             sc.isTrigger = true;
             bulletRB.AddForce(directionWithoutSpread.normalized * 25, ForceMode.Impulse);
+        }
 
+        //bulletRB.AddForce(Camera.main.transform.up * 1, ForceMode.Impulse); add camera recoil/shake?
+        yield return new WaitForSeconds(attackDelay);
+        readyToShoot = true;
+    }
+    private IEnumerator ShootChargedBullet()
+    { 
+        if (_shootSound != null)
+                _shootSound.Play();
+        float timeElapsed = 0;
+        print("CHARGING...");
+        while(Input.GetMouseButton(0))
+        {
+            yield return new WaitForSeconds(.01f);
+            timeElapsed += Time.deltaTime;              
+        }
+        if(timeElapsed < 1.8)
+        {
+            _shootSound.Stop();
+            _shootWhiffSound.Play();
+            print("Zzzt...(Did not hold long enough)");
+        }
+        else if(timeElapsed < 3)
+        {
+            _shootUnchargedSound.Play();
+            print(timeElapsed);
+            readyToShoot = false;
+            loadedAmmo -= 1;
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+            RaycastHit hit;
+            Vector3 targetPoint;
+            if (Physics.Raycast(ray, out hit))
+                targetPoint = hit.point;
+            else
+                targetPoint = ray.GetPoint(75);
+            Vector3 directionWithoutSpread = targetPoint - attackPoint.position;
+            GameObject currentBullet = Instantiate(bullet, attackPoint.position, Quaternion.identity);
+            currentBullet.transform.forward = directionWithoutSpread.normalized;
+            Vector3 pos = Camera.main.transform.TransformPoint(Vector3.forward * 1);
 
-            //bulletRB.AddForce(Camera.main.transform.up * 1, ForceMode.Impulse); add camera recoil/shake?
+            Rigidbody bulletRB = currentBullet.AddComponent(typeof(Rigidbody)) as Rigidbody;
+            SphereCollider sc = currentBullet.AddComponent(typeof(SphereCollider)) as SphereCollider;
+            BulletLogicScript BLScript = currentBullet.AddComponent<BulletLogicScript>();
+            BLScript.damage = damage;
+            sc.radius += 1f;
+            sc.isTrigger = true;
+            bulletRB.AddForce(directionWithoutSpread.normalized * 25, ForceMode.Impulse);
+        }
+        else
+        {   
+            _shootChargedSound.Play();
+            print(_shootChargedSound);
+            print(timeElapsed);
+            readyToShoot = false;
+            loadedAmmo -= 1;
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+            RaycastHit hit;
+            Vector3 targetPoint;
+            if (Physics.Raycast(ray, out hit))
+                targetPoint = hit.point;
+            else
+                targetPoint = ray.GetPoint(75);
+            Vector3 directionWithoutSpread = targetPoint - attackPoint.position;
+            GameObject currentBullet = Instantiate(bullet, attackPoint.position, Quaternion.identity);
+            currentBullet.transform.forward = directionWithoutSpread.normalized;
+            Vector3 pos = Camera.main.transform.TransformPoint(Vector3.forward * 1);
+            Rigidbody bulletRB = currentBullet.AddComponent(typeof(Rigidbody)) as Rigidbody;
+            bulletRB.useGravity = false;
+            SphereCollider sc = currentBullet.AddComponent(typeof(SphereCollider)) as SphereCollider;
+            BulletLogicScript BLScript = currentBullet.AddComponent<BulletLogicScript>();
+            BLScript.damage = damage * 3;
+            currentBullet.transform.localScale *= 3;
+            sc.radius += 3f;
+            sc.isTrigger = true;
+            bulletRB.AddForce(directionWithoutSpread.normalized * 50, ForceMode.Impulse);
+
         }
         yield return new WaitForSeconds(attackDelay);
         readyToShoot = true;
+        chargeShot = null;
+
     }
 }

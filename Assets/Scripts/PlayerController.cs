@@ -71,8 +71,9 @@ public class PlayerController : MonoBehaviour
     public int currentLaserAmmo;
     public uint maxPistolAmmo = 50;
     public uint maxRifleAmmo = 60;
+    public uint maxPhysicsAmmo = 4;
     public uint maxLaserAmmo = 50;
-    public uint currentPhysicsAmmo = 4;
+    public int currentPhysicsAmmo = 4;
     public int currentMoney = 0;
     public int moneyEarned = 0;
 
@@ -239,6 +240,8 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = (int)maxRifleAmmo;
         if (currentLaserAmmo > maxLaserAmmo)
             currentLaserAmmo = (int)maxLaserAmmo;
+        if (currentPhysicsAmmo > maxPhysicsAmmo)
+            currentPhysicsAmmo = (int)maxPhysicsAmmo;
 
         if (currentPistolAmmo < 0)
             currentPistolAmmo = 0;
@@ -246,6 +249,9 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = 0;
         if (currentLaserAmmo < 0)
             currentLaserAmmo = 0;
+        if (currentPhysicsAmmo < 0)
+            currentPhysicsAmmo = 0;
+
 
         // new gravity
         if (enablePlayerGravity)
@@ -721,14 +727,18 @@ public class PlayerController : MonoBehaviour
             // cycle weapon up
             if (currentWeaponIndex < playerWeapons.Count - 1) // only executes if we are not at the last index
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex += 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our first weapon (we don't need this if we don't want to let the player scroll all the way through the list endlessly)
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = 0;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
 
@@ -739,15 +749,20 @@ public class PlayerController : MonoBehaviour
             // cycle weapon down
             if (currentWeaponIndex > 0) // only executes if we are not at the first index
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeapon = playerWeapons[currentWeaponIndex - 1];
                 currentWeaponIndex -= 1;
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
             }
             else // otherwise we set the currentWeapon to our last weapon (same as above)
             {
+                currentWeapon.gameObject.SetActive(false);
                 currentWeaponIndex = playerWeapons.Count - 1;
                 currentWeapon = playerWeapons[currentWeaponIndex];
+                currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
+                
             }
         }
     }
@@ -820,7 +835,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (currentPhysicsAmmo > (int)currentWeapon.maxAmmoBeforeReload)
                 {
-                    currentPhysicsAmmo -= (uint)currentWeapon.maxAmmoBeforeReload;
+                    currentPhysicsAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
                     currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
                 }
                 else

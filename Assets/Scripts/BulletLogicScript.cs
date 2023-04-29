@@ -5,7 +5,7 @@ using UnityEngine;
 public class BulletLogicScript : MonoBehaviour
 {
   public int damage;
-  public float lifeSpan = 3;
+  public float lifeSpan = 2;
 
   void FixedUpdate()
   {
@@ -15,13 +15,28 @@ public class BulletLogicScript : MonoBehaviour
         Destroy(this.gameObject);
   }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        if(other.tag == "Enemy")
+        Enemy enemy;
+        if(other.gameObject.transform.parent != null)
         {
-            other.GetComponent<Enemy>().TakeDamage(damage);
-            print(this.gameObject);
-            Destroy(this.gameObject);
+            enemy = other.gameObject.transform.parent.GetComponent<Enemy>();
+            if(enemy != null)
+            {
+                enemy.TakeDamage(damage);
+                print(this.gameObject);
+                Destroy(this.gameObject);
+            }
+        }
+        else if(other.gameObject.transform.parent == null)
+        {
+            enemy = other.gameObject.GetComponent<Enemy>();
+            if(enemy != null)
+            {
+                enemy.TakeDamage(damage);
+                print(this.gameObject);
+                Destroy(this.gameObject);
+            }
         }
     }
 }
