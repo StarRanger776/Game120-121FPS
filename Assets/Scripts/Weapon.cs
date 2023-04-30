@@ -51,9 +51,12 @@ public class Weapon : ItemBase
         AudioSource[] shootSounds;
 
         shootSounds = GetComponents<AudioSource>();
-        _shootChargedSound = shootSounds[3];
-        _shootUnchargedSound = shootSounds[2];
-        _shootWhiffSound = shootSounds[1];       
+        if(isChargable)
+        {
+            _shootWhiffSound = shootSounds[1];
+            _shootUnchargedSound = shootSounds[2];
+            _shootChargedSound = shootSounds[3];
+        }   
         _player = FindObjectOfType<PlayerController>();
     }
 
@@ -65,17 +68,17 @@ public class Weapon : ItemBase
             {
                 StartCoroutine(ShootRaycast());
             }
-            else if(readyToShoot && !isRaycast && isChargable)
+            else if(readyToShoot && !isRaycast && !isChargable)
             {
-                if(chargeShot == null)
+                StartCoroutine(ShootBullet());
+            }
+            else if (readyToShoot && !isRaycast && isChargable)
+            {
+                if (chargeShot == null)
                 {
                     chargeShot = StartCoroutine(ShootChargedBullet());
                 }
             }
-            else if(readyToShoot && !isRaycast && !isChargable)
-            {
-                StartCoroutine(ShootBullet());
-            }   
         }
         else
         {
