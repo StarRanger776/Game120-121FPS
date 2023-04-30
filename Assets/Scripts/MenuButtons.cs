@@ -17,11 +17,14 @@ public class MenuButtons : MonoBehaviour
     {
         player = FindObjectOfType<PlayerController>();
 
-        mouseSensSlider.maxValue = 100;
-        mouseSensSlider.minValue = 0;
+        if (mouseSensSlider != null )
+        {
+          mouseSensSlider.maxValue = 100;
+          mouseSensSlider.minValue = 0;
 
-        if (player.mouseSensitivity.x == 0)
+          if (player.mouseSensitivity.x == 0)
             mouseSensSlider.value = 100;
+        }
     }
 
     public void StartGame()
@@ -46,7 +49,7 @@ public class MenuButtons : MonoBehaviour
 
     public void ExitGame()
     {
-        EditorApplication.isPlaying = false; // comment out or delete before building, else the project will fail to build
+        // EditorApplication.isPlaying = false; // comment out or delete before building, else the project will fail to build
         Application.Quit();
     }
 }

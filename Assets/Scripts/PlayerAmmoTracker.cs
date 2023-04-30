@@ -24,8 +24,6 @@ public class PlayerAmmoTracker : MonoBehaviour
                 ammoText.text = $"{player.currentWeapon.loadedAmmo} / {player.currentWeapon.maxAmmoBeforeReload} - ({player.currentRifleAmmo})";
             else if (player.currentWeapon.type.ToUpper().Equals("LASER"))
                 ammoText.text = $"{player.currentWeapon.loadedAmmo} / {player.currentWeapon.maxAmmoBeforeReload} - ({player.currentLaserAmmo})";
-            else if (player.currentWeapon.type.ToUpper().Equals("PLASMA"))
-                ammoText.text = $"{player.currentWeapon.loadedAmmo} / {player.currentWeapon.maxAmmoBeforeReload} - ({player.currentPhysicsAmmo})";
         }
         else if (player.gameObject.activeInHierarchy && ammoText != null && player.isReloading)
         {
