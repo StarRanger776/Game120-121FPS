@@ -71,7 +71,9 @@ public class PlayerController : MonoBehaviour
     public int currentLaserAmmo;
     public uint maxPistolAmmo = 50;
     public uint maxRifleAmmo = 60;
+    public uint maxPhysicsAmmo = 4;
     public uint maxLaserAmmo = 50;
+    public int currentPhysicsAmmo = 4;
     public int currentMoney = 0;
     public int moneyEarned = 0;
 
@@ -238,6 +240,8 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = (int)maxRifleAmmo;
         if (currentLaserAmmo > maxLaserAmmo)
             currentLaserAmmo = (int)maxLaserAmmo;
+        if (currentPhysicsAmmo > maxPhysicsAmmo)
+            currentPhysicsAmmo = (int)maxPhysicsAmmo;
 
         if (currentPistolAmmo < 0)
             currentPistolAmmo = 0;
@@ -245,6 +249,9 @@ public class PlayerController : MonoBehaviour
             currentRifleAmmo = 0;
         if (currentLaserAmmo < 0)
             currentLaserAmmo = 0;
+        if (currentPhysicsAmmo < 0)
+            currentPhysicsAmmo = 0;
+
 
         // new gravity
         if (enablePlayerGravity)
@@ -755,6 +762,7 @@ public class PlayerController : MonoBehaviour
                 currentWeapon = playerWeapons[currentWeaponIndex];
                 currentWeapon.gameObject.SetActive(true);
                 Debug.Log($"Equipped {currentWeapon.name}!");
+                
             }
         }
     }
@@ -823,6 +831,20 @@ public class PlayerController : MonoBehaviour
                     currentLaserAmmo = 0;
                 }
             }
+            else if (currentWeapon.type.ToUpper().Equals("PLASMA"))
+            {
+                if (currentPhysicsAmmo > (int)currentWeapon.maxAmmoBeforeReload)
+                {
+                    currentPhysicsAmmo -= (int)currentWeapon.maxAmmoBeforeReload;
+                    currentWeapon.loadedAmmo = (int)currentWeapon.maxAmmoBeforeReload;
+                }
+                else
+                {
+                    currentWeapon.loadedAmmo = (int)currentPhysicsAmmo;
+                    currentPhysicsAmmo = 0;
+                }
+            }
+
         }
         else
         {
