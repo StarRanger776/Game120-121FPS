@@ -580,7 +580,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mouseSensitivity: {x: 0, y: 0}
-  gameLogic: {fileID: 133296112130331435, guid: fb55569d2b859aa4a83aa507376f6975, type: 3}
+  gameLogic: {fileID: 0}
   firstPersonCamera: {fileID: 0}
   healthSlider: {fileID: 0}
   jetpackFuelSlider: {fileID: 0}
@@ -630,7 +630,6 @@ MonoBehaviour:
   timeToZoom: 0.1
   zoomedFov: 40
   timeToCrouch: 0.1
-  isReloading: 0
   readyToDash: 1
   isRegeningHp: 0
   isRegeningFuel: 0
