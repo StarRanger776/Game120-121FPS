@@ -31,7 +31,7 @@ public class MiscButtons : MonoBehaviour
 
     public void ExitGame()
     {
-        //EditorApplication.isPlaying = false; // comment out or delete before building, else the project will fail to build
+        // EditorApplication.isPlaying = false; // comment out or delete before building, else the project will fail to build
         Application.Quit();
     }
 }

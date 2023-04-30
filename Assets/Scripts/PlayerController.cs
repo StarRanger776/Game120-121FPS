@@ -498,7 +498,7 @@ public class PlayerController : MonoBehaviour
                 playerWeapons.Add(weaponToPickup.weaponToUseOnPlayer);
                 if (itemToPickup.pickupText != null)
                     Destroy(itemToPickup.pickupText.gameObject);
-                weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
+                //weaponToPickup.weaponToActivateOnPlayer.SetActive(true);
                 if (itemToPickup.transform.parent != null)
                 {
                     Destroy(itemToPickup.transform.parent.gameObject);
@@ -721,7 +721,7 @@ public class PlayerController : MonoBehaviour
      * HandleInventory should also control things like keys in the inventory.*/
     private void HandleInventory()
     {
-        if (Input.GetAxis("Mouse ScrollWheel") > 0 && enablePlayerMovementControls)
+        if (Input.GetAxis("Mouse ScrollWheel") > 0 && enablePlayerMovementControls) // scroll up
         {
             currentWeapon.readyToShoot = true;
             // cycle weapon up
@@ -743,7 +743,7 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-        else if (Input.GetAxis("Mouse ScrollWheel") < 0 && enablePlayerMovementControls)
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0 && enablePlayerMovementControls) // scroll down
         {
             currentWeapon.readyToShoot = true;
             // cycle weapon down
@@ -785,6 +785,11 @@ public class PlayerController : MonoBehaviour
         else if (weaponType.ToUpper().Equals("RIFLE"))
         {
             currentRifleAmmo += currentWeapon.loadedAmmo;
+            currentWeapon.loadedAmmo = 0;
+        }
+        else if (weaponType.ToUpper().Equals("PLASMA"))
+        {
+            currentPhysicsAmmo += currentWeapon.loadedAmmo;
             currentWeapon.loadedAmmo = 0;
         }
 
