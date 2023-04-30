@@ -162,8 +162,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 2
-  m_fontSizeBase: 2
+  m_fontSize: 1
+  m_fontSizeBase: 1
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectToRotateWith: {fileID: 0}
-  objectToMoveWith: {fileID: 0}
+  objectToMoveWith: {fileID: 5602312368111049831}
   rotX: 0
   rotY: 0
   rotZ: 0
@@ -252,7 +252,6 @@ GameObject:
   - component: {fileID: 5602312368111049830}
   - component: {fileID: 5602312368111049827}
   - component: {fileID: 5602312368111049828}
-  - component: {fileID: 5602312368111049829}
   - component: {fileID: 5602312368111049825}
   - component: {fileID: 5602312368111049826}
   - component: {fileID: 5602312368111049824}
@@ -328,19 +327,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5602312368111049829
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5602312368111049831}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5602312368111049825
 MonoBehaviour:
   m_ObjectHideFlags: 0
