@@ -13,11 +13,13 @@ public class MenuButtons : MonoBehaviour
     public Slider mouseSensSlider;
     private PlayerController player;
 
+    //Assume these change the formatting in the Editor, however Unity will not allow me to run the game without these being resolved.
+
     private void Awake()
     {
         player = FindObjectOfType<PlayerController>();
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
         if (mouseSensSlider != null)
         {
             mouseSensSlider.maxValue = 100;
@@ -28,8 +30,8 @@ public class MenuButtons : MonoBehaviour
         }
     }
 
-=======
->>>>>>> parent of 09c5c22 (Shop and Music)
+//=======
+//>>>>>>> parent of 09c5c22 (Shop and Music)
     public void StartGame()
     {
         if (!overrideDefaultSceneLoad)
