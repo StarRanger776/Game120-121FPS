@@ -4,12 +4,9 @@ using UnityEngine;
 
 public class Settings : MonoBehaviour
 {
+    //Eventually when implementing the Save/Load thought it would be best if all information could just be found from here.
     public static Settings instance;
-    //The idea being that you can just plug this in OnEnable or something, in the player Controller 
     public Vector2 savedSens;
-
-    private float xSens;
-    private float ySens;
 
     //Just Making it a singleton.
     private void Awake()
@@ -26,9 +23,6 @@ public class Settings : MonoBehaviour
 
     private void Start()
     {
-        savedSens.x = xSens;
-        savedSens.y = ySens;
-        
         //Wanted to localize it, for when Save/Load, that way Settings are saved after restarting game...
         //savedSens = PlayerController.mouseSensitivity;
     }

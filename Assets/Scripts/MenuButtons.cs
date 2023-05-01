@@ -17,6 +17,7 @@ public class MenuButtons : MonoBehaviour
     {
         player = FindObjectOfType<PlayerController>();
 
+<<<<<<< HEAD
         if (mouseSensSlider != null)
         {
             mouseSensSlider.maxValue = 100;
@@ -27,6 +28,8 @@ public class MenuButtons : MonoBehaviour
         }
     }
 
+=======
+>>>>>>> parent of 09c5c22 (Shop and Music)
     public void StartGame()
     {
         if (!overrideDefaultSceneLoad)
