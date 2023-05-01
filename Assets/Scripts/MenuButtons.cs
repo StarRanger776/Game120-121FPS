@@ -15,6 +15,12 @@ public class MenuButtons : MonoBehaviour
         curSettings = Settings.instance;
     }
 
+    private void OnEnable()
+    {
+        optionsCanvas.SetActive(false);
+        mainCanvas.SetActive(true);
+    }
+
     public void StartGame()
     {
         SceneManager.LoadScene("LoadFirstAfterMainMenu");
