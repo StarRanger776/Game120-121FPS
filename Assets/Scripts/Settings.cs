@@ -14,6 +14,7 @@ public class Settings : MonoBehaviour
         if (Settings.instance == null)
         {
             Settings.instance = this;
+            DontDestroyOnLoad(this);
         }
         else if (Settings.instance != this) 
         { 
