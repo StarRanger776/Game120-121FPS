@@ -25,8 +25,8 @@ public class MiscButtons : MonoBehaviour
             player = null;
         }
 
-        // SceneManager.LoadScene("MainMenu");
-        SceneManager.LoadScene("AltMenuMain");
+        SceneManager.LoadScene("MainMenu");
+        // SceneManager.LoadScene("AltMenuMain");
     }
 
     public void ExitGame()
