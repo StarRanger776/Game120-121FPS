@@ -783,6 +783,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2060630679}
     - target: {fileID: 7861471353084164589, guid: d1c5070f2f6d2334a9e12d70da0d3dbb, type: 3}
+      propertyPath: unlockJetpack
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7861471353084164589, guid: d1c5070f2f6d2334a9e12d70da0d3dbb, type: 3}
       propertyPath: firstPersonCamera
       value: 
       objectReference: {fileID: 2060630680}
@@ -1141,6 +1145,7 @@ MonoBehaviour:
   isRanged: 0
   isTwoHanded: 0
   isRaycast: 0
+  isChargable: 0
   loadedAmmo: 0
   maxAmmoBeforeReload: 0
   readyToShoot: 1
@@ -1153,6 +1158,7 @@ MonoBehaviour:
   weaponToActivateOnPlayer: {fileID: 0}
   weaponToUseOnPlayer: {fileID: 0}
   bullet: {fileID: 0}
+  attackPoint: {fileID: 0}
 --- !u!33 &259514732
 MeshFilter:
   m_ObjectHideFlags: 10
@@ -2992,6 +2998,7 @@ MonoBehaviour:
   isRanged: 1
   isTwoHanded: 1
   isRaycast: 1
+  isChargable: 0
   loadedAmmo: 0
   maxAmmoBeforeReload: 16
   readyToShoot: 1
@@ -3004,6 +3011,7 @@ MonoBehaviour:
   weaponToActivateOnPlayer: {fileID: 1813361707}
   weaponToUseOnPlayer: {fileID: 0}
   bullet: {fileID: 0}
+  attackPoint: {fileID: 0}
 --- !u!64 &308104047
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -7274,6 +7282,7 @@ MonoBehaviour:
   isRanged: 0
   isTwoHanded: 0
   isRaycast: 1
+  isChargable: 0
   loadedAmmo: 0
   maxAmmoBeforeReload: 0
   readyToShoot: 1
@@ -7286,6 +7295,7 @@ MonoBehaviour:
   weaponToActivateOnPlayer: {fileID: 0}
   weaponToUseOnPlayer: {fileID: 0}
   bullet: {fileID: 0}
+  attackPoint: {fileID: 0}
 --- !u!4 &741452683
 Transform:
   m_ObjectHideFlags: 0
@@ -14218,6 +14228,7 @@ MonoBehaviour:
   isRanged: 1
   isTwoHanded: 0
   isRaycast: 1
+  isChargable: 0
   loadedAmmo: 0
   maxAmmoBeforeReload: 0
   readyToShoot: 1
@@ -14230,6 +14241,7 @@ MonoBehaviour:
   weaponToActivateOnPlayer: {fileID: 0}
   weaponToUseOnPlayer: {fileID: 0}
   bullet: {fileID: 0}
+  attackPoint: {fileID: 0}
 --- !u!135 &1756290723
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -733,7 +733,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 7451550461630094133}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.65
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -761,6 +761,7 @@ MonoBehaviour:
   currentHp: 20
   maxHp: 20
   healthSlider: {fileID: 5418044716261066609}
+  moneyOnKill: 0
 --- !u!1 &7451550461682681731
 GameObject:
   m_ObjectHideFlags: 0

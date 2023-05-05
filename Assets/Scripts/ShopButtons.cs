@@ -25,8 +25,10 @@ public class ShopButtons : MonoBehaviour
 
     private void Start()
     {
-        startingCanvas.SetActive(true);
-        shopCanvas.SetActive(false);
+        if (startingCanvas != null)
+            startingCanvas.SetActive(true);
+        if (shopCanvas != null)
+            shopCanvas.SetActive(false);
     }
 
     public void NextLevel()
@@ -55,7 +57,9 @@ public class ShopButtons : MonoBehaviour
 
     public void EnterShop() 
     {
-        startingCanvas.SetActive(false);
-        shopCanvas.SetActive(true);
+        if (startingCanvas != null)
+            startingCanvas.SetActive(false);
+        if (shopCanvas != null)
+            shopCanvas.SetActive(true);
     }
 }
