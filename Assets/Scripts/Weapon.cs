@@ -169,8 +169,9 @@ public class Weapon : ItemBase
         print("CHARGING...");
         while(Input.GetMouseButton(0))
         {
-            yield return new WaitForSeconds(.01f);
-            timeElapsed += Time.deltaTime;              
+            yield return new WaitForEndOfFrame();
+            if (readyToShoot)
+                timeElapsed += Time.deltaTime;              
         }
         if(timeElapsed < 1.8)
         {
@@ -207,7 +208,6 @@ public class Weapon : ItemBase
         else
         {   
             _shootChargedSound.Play();
-            print(_shootChargedSound);
             print(timeElapsed);
             readyToShoot = false;
             loadedAmmo -= 1;
@@ -222,6 +222,7 @@ public class Weapon : ItemBase
             GameObject currentBullet = Instantiate(bullet, attackPoint.position, Quaternion.identity);
             currentBullet.transform.forward = directionWithoutSpread.normalized;
             Vector3 pos = Camera.main.transform.TransformPoint(Vector3.forward * 1);
+
             Rigidbody bulletRB = currentBullet.AddComponent(typeof(Rigidbody)) as Rigidbody;
             bulletRB.useGravity = false;
             SphereCollider sc = currentBullet.AddComponent(typeof(SphereCollider)) as SphereCollider;
@@ -236,6 +237,5 @@ public class Weapon : ItemBase
         yield return new WaitForSeconds(attackDelay);
         readyToShoot = true;
         chargeShot = null;
-
     }
 }
